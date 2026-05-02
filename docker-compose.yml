@@ -1,0 +1,13 @@
+version: "3.8"
+
+services:
+  surrealdb:
+    image: surrealdb/surrealdb:latest
+    command: ["start", "--log", "debug", "--user", "root", "--pass", "root", "--allow-all", "memory"]
+    ports:
+      - "8000:8000"
+    volumes:
+      - surrealdb_data:/var/lib/surrealdb
+
+volumes:
+  surrealdb_data:

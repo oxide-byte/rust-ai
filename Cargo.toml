@@ -1,6 +1,7 @@
 [workspace]
 members = [
-    "ollama_sample"
+    "ollama_sample",
+    "rag_sample"
 ]
 resolver = "2"
 
@@ -9,3 +10,4 @@ reqwest = { version = "0.12", features = ["json"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 tokio = { version = "1.0", features = ["full"] }
+pdf-extract = "0.10"
