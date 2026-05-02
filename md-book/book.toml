@@ -1,0 +1,13 @@
+[book]
+title = "Rust Enterprise Edition"
+authors = ["oxide-byte"]
+language = "en"
+
+[preprocessor.mermaid]
+command = "mdbook-mermaid"
+
+[build]
+build-dir = "../docs"
+
+[output.html]
+additional-js = ["mermaid.min.js", "mermaid-init.js"]
