@@ -17,6 +17,17 @@ services:
     volumes:
       - qdrant_data:/qdrant/storage
 
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    ports:
+      - "9200:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+
 volumes:
   surrealdb_data:
   qdrant_data:
+  es_data:

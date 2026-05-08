@@ -2,7 +2,8 @@
 members = [
     "ollama_sample",
     "rag_surrealdb",
-    "rag_qdrant"
+    "rag_qdrant",
+    "rag_elasticsearch"
 ]
 resolver = "2"
 
