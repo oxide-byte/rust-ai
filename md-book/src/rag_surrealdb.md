@@ -8,7 +8,7 @@ This sample demonstrates a full Rust-based Retrieval-Augmented Generation (RAG) 
 - performs semantic vector search to retrieve relevant chunks for a question,
 - synthesizes a final answer using an LLM.
 
-The SurrealDB server and Ollama service should be running locally. The Rust workspace includes the `rag_sample` module for loading and querying data.
+The SurrealDB server and Ollama service should be running locally. The Rust workspace includes the `rag_surrealdb` module for loading and querying data.
 
 ## What This Project Does
 
@@ -20,10 +20,10 @@ The SurrealDB server and Ollama service should be running locally. The Rust work
 
 ## Plan
 
-1. Add a new Rust workspace member named `rag_sample`.
+1. Add a new Rust workspace member named `rag_surrealdb`.
 2. Add `pdf-extract` to the workspace dependencies.
 3. Create a Docker Compose configuration for SurrealDB.
-4. Implement `rag_sample/src/main.rs` with two modes:
+4. Implement `rag_surrealdb/src/main.rs` with two modes:
    - `load <path-to-pdf>`: read the PDF and insert page chunks into SurrealDB
    - `ask "<question>"`: retrieve relevant PDF chunks from SurrealDB
 5. Update documentation with the instructions and sample commands.
@@ -40,7 +40,7 @@ When you run the `load` command, the application performs the following steps:
 
 ```mermaid
 sequenceDiagram
-    participant CLI as rag_sample load
+    participant CLI as rag_surrealdb load
     participant PDF as PDF File
     participant O as Ollama (llama3.1)
     participant S as SurrealDB
@@ -64,7 +64,7 @@ When you run the `ask` command, the application executes the RAG workflow:
 
 ```mermaid
 sequenceDiagram
-    participant CLI as rag_sample ask
+    participant CLI as rag_surrealdb ask
     participant O as Ollama (llama3.1)
     participant S as SurrealDB
 
@@ -91,18 +91,18 @@ ollama run llama3.1
 
 ### Load a PDF
 ```bash
-cargo run -p rag_sample -- load path/to/document.pdf
+cargo run -p rag_surrealdb -- load path/to/document.pdf
 ```
 
 ### Sample PDF
 Use the included sample file:
 ```bash
-cargo run -p rag_sample -- load data/the-tale-of-peter-rabbit.pdf
+cargo run -p rag_surrealdb -- load data/the-tale-of-peter-rabbit.pdf
 ```
 
 ### Ask a Question
 ```bash
-cargo run -p rag_sample -- ask "Who is Peter?"
+cargo run -p rag_surrealdb -- ask "Who is Peter?"
 ```
 
 ## Notes
@@ -115,7 +115,7 @@ cargo run -p rag_sample -- ask "Who is Peter?"
 ## File Structure
 
 ```
-rag_sample/
+rag_surrealdb/
 ├── Cargo.toml
 └── src/
     └── main.rs

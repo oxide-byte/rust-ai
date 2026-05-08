@@ -1,7 +1,7 @@
 [workspace]
 members = [
     "ollama_sample",
-    "rag_sample",
+    "rag_surrealdb",
     "rag_qdrant"
 ]
 resolver = "2"

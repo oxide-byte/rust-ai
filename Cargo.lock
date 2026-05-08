@@ -1074,7 +1074,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "rag_sample"
+name = "rag_surrealdb"
 version = "0.1.0"
 dependencies = [
  "pdf-extract",
