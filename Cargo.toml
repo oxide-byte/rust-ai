@@ -1,7 +1,8 @@
 [workspace]
 members = [
     "ollama_sample",
-    "rag_sample"
+    "rag_sample",
+    "rag_qdrant"
 ]
 resolver = "2"
 
@@ -11,3 +12,4 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 tokio = { version = "1.0", features = ["full"] }
 pdf-extract = "0.10"
+uuid = { version = "1.0", features = ["v4"] }

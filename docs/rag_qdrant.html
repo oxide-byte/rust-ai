@@ -3,8 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Rust Enterprise Edition</title>
-        <meta name="robots" content="noindex">
+        <title>RAG with QDRANT - Rust Enterprise Edition</title>
 
 
         <!-- Custom HTML head -->
@@ -175,254 +174,8 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="mdbook-instructions"><a class="header" href="#mdbook-instructions">mdBook Instructions</a></h1>
-<p>This project uses <strong>mdBook</strong> to generate documentation.</p>
-<h2 id="prerequisites"><a class="header" href="#prerequisites">Prerequisites</a></h2>
-<p>To build the documentation, you need to install <code>mdbook</code> and the <code>mdbook-mermaid</code> preprocessor for diagrams.</p>
-<h3 id="1-install-mdbook"><a class="header" href="#1-install-mdbook">1. Install mdBook</a></h3>
-<p>You can install <code>mdbook</code> using Cargo (Rust’s package manager):</p>
-<pre><code class="language-bash">cargo install mdbook
-</code></pre>
-<p>Alternatively, you can download binaries from the <a href="https://github.com/rust-lang/mdBook/releases">mdBook releases page</a>.</p>
-<h3 id="2-install-mdbook-mermaid"><a class="header" href="#2-install-mdbook-mermaid">2. Install mdbook-mermaid</a></h3>
-<p>This project uses Mermaid for diagrams. Install the preprocessor:</p>
-<pre><code class="language-bash">cargo install mdbook-mermaid
-</code></pre>
-<h2 id="building-the-book"><a class="header" href="#building-the-book">Building the Book</a></h2>
-<p>The book is configured to build its output into the <code>/docs</code> directory at the project root.</p>
-<h3 id="build-command"><a class="header" href="#build-command">Build Command</a></h3>
-<p>To generate the HTML version of the book, run the following command from the <code>md-book</code> directory:</p>
-<pre><code class="language-bash">mdbook build
-</code></pre>
-<p>The generated files will be placed in <code>../docs</code>.</p>
-<h3 id="live-development"><a class="header" href="#live-development">Live Development</a></h3>
-<p>To preview changes as you edit, you can use the <code>serve</code> command:</p>
-<pre><code class="language-bash">mdbook serve --open
-</code></pre>
-<p>This will start a local web server and open the book in your default browser. It automatically reloads when you save changes to the markdown files.</p>
-<h2 id="project-structure"><a class="header" href="#project-structure">Project Structure</a></h2>
-<ul>
-<li><code>md-book/book.toml</code>: Configuration file for the book.</li>
-<li><code>md-book/src/</code>: Contains the markdown source files.</li>
-<li><code>md-book/src/SUMMARY.md</code>: The table of contents for the book.</li>
-<li><code>docs/</code>: The generated HTML documentation (output directory).</li>
-</ul>
-<div style="break-before: page; page-break-before: always;"></div>
-<h1 id="rust-models"><a class="header" href="#rust-models">Rust Models</a></h1>
-<h2 id="strand-rust-coder-14b"><a class="header" href="#strand-rust-coder-14b">Strand-Rust-Coder-14B</a></h2>
-<ul>
-<li>URL: https://huggingface.co/Fortytwo-Network/Strand-Rust-Coder-14B-v1-GGUF</li>
-<li>Model: hf.co/Fortytwo-Network/Strand-Rust-Coder-14B-v1-GGUF:latest</li>
-</ul>
-<div style="break-before: page; page-break-before: always;"></div>
-<h1 id="ollama-sample-introduction-to-local-llm-integration"><a class="header" href="#ollama-sample-introduction-to-local-llm-integration">Ollama Sample: Introduction to Local LLM Integration</a></h1>
-<h2 id="welcome"><a class="header" href="#welcome">Welcome!</a></h2>
-<p>This introduction guide walks you through <strong>ollama_sample</strong>, a beginner-friendly Rust application that demonstrates how to integrate a local Ollama LLM into your Rust projects. By the end of this guide, you’ll understand how to communicate with local AI models and build interactive applications.</p>
-<h2 id="what-youll-build"><a class="header" href="#what-youll-build">What You’ll Build</a></h2>
-<p>A command-line Rust application that:</p>
-<ul>
-<li>Prompts you to enter 5 keywords</li>
-<li>Sends those keywords to a local Ollama AI model</li>
-<li>Generates a creative joke based on those keywords</li>
-<li>Displays the result in your terminal</li>
-</ul>
-<p>This is a great starting point for learning:</p>
-<ul>
-<li>Async Rust programming with <code>tokio</code></li>
-<li>HTTP API calls using <code>reqwest</code></li>
-<li>JSON serialization with <code>serde</code></li>
-<li>Prompt engineering for AI models</li>
-</ul>
-<h2 id="system-requirements"><a class="header" href="#system-requirements">System Requirements</a></h2>
-<p>Before you begin, ensure you have:</p>
-<ol>
-<li><strong>Rust toolchain</strong> - Install from <a href="https://rustup.rs">rustup.rs</a></li>
-<li><strong>Ollama</strong> - Download from <a href="https://ollama.ai">ollama.ai</a></li>
-<li><strong>A language model</strong> - Download one with: <code>ollama pull llama3.1</code> (or <code>llama2</code>)</li>
-</ol>
-<h2 id="quick-start"><a class="header" href="#quick-start">Quick Start</a></h2>
-<h3 id="step-1-start-ollama"><a class="header" href="#step-1-start-ollama">Step 1: Start Ollama</a></h3>
-<p>Open a terminal and keep it running:</p>
-<pre><code class="language-bash">ollama serve
-</code></pre>
-<h3 id="step-2-run-the-application"><a class="header" href="#step-2-run-the-application">Step 2: Run the Application</a></h3>
-<p>In a new terminal, navigate to your workspace and run:</p>
-<pre><code class="language-bash">cargo run -p ollama_sample
-</code></pre>
-<h3 id="step-3-enter-keywords"><a class="header" href="#step-3-enter-keywords">Step 3: Enter Keywords</a></h3>
-<p>When prompted, type 5 keywords (one per line), for example:</p>
-<pre><code>Keyword 1: coffee
-Keyword 2: robots
-Keyword 3: pizza
-Keyword 4: astronauts
-Keyword 5: socks
-</code></pre>
-<h3 id="step-4-see-the-magic"><a class="header" href="#step-4-see-the-magic">Step 4: See the Magic</a></h3>
-<p>The application will generate and display a funny joke using your keywords!</p>
-<h2 id="how-it-works-under-the-hood"><a class="header" href="#how-it-works-under-the-hood">How It Works Under the Hood</a></h2>
-<ol>
-<li><strong>User Input Collection</strong>: The app reads 5 keywords from your terminal</li>
-<li><strong>Prompt Construction</strong>: Keywords are formatted into a natural language instruction</li>
-<li><strong>API Request</strong>: An async HTTP POST request is sent to Ollama’s <code>/api/generate</code> endpoint</li>
-<li><strong>Model Processing</strong>: Your local LLM processes the prompt</li>
-<li><strong>Response Handling</strong>: The generated joke is displayed in your terminal</li>
-</ol>
-<h2 id="project-structure-1"><a class="header" href="#project-structure-1">Project Structure</a></h2>
-<pre><code>ollama_sample/
-├── Cargo.toml          # Package manifest with dependencies
-└── src/
-    └── main.rs         # Main application (async Rust code)
-</code></pre>
-<h2 id="key-technologies"><a class="header" href="#key-technologies">Key Technologies</a></h2>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Technology</th><th>Purpose</th></tr>
-</thead>
-<tbody>
-<tr><td><code>reqwest</code></td><td>Making HTTP requests to Ollama</td></tr>
-<tr><td><code>tokio</code></td><td>Async runtime for concurrent operations</td></tr>
-<tr><td><code>serde</code> &amp; <code>serde_json</code></td><td>JSON serialization and deserialization</td></tr>
-</tbody>
-</table>
-</div>
-<h2 id="tips-for-success"><a class="header" href="#tips-for-success">Tips for Success</a></h2>
-<ul>
-<li><strong>Model Selection</strong>: <code>llama3.1</code> provides better joke quality than <code>llama2</code>; experiment with different models</li>
-<li><strong>Ollama Server</strong>: Keep the <code>ollama serve</code> command running in a separate terminal</li>
-<li><strong>Customization</strong>: Edit the system prompt in <code>main.rs</code> to change the AI’s personality (e.g., “Act as a standup comedian”)</li>
-<li><strong>Error Messages</strong>: If you see connection errors, verify Ollama is running on <code>http://localhost:11434</code></li>
-</ul>
-<h2 id="whats-next"><a class="header" href="#whats-next">What’s Next?</a></h2>
-<p>Once comfortable with this example, try:</p>
-<ul>
-<li>Adding more sophisticated prompts</li>
-<li>Experimenting with different models</li>
-<li>Building a web interface using the same Ollama API</li>
-<li>Creating multi-turn conversations</li>
-</ul>
-<div style="break-before: page; page-break-before: always;"></div>
-<h1 id="rag-sample-introduction-to-pdf-retrieval-with-surrealdb"><a class="header" href="#rag-sample-introduction-to-pdf-retrieval-with-surrealdb">RAG Sample: Introduction to PDF Retrieval with SurrealDB</a></h1>
+                        <h1 id="rag-sample-introduction-to-pdf-retrieval-with-qdrant"><a class="header" href="#rag-sample-introduction-to-pdf-retrieval-with-qdrant">RAG Sample: Introduction to PDF Retrieval with Qdrant</a></h1>
 <h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
-<p>This sample demonstrates a full Rust-based Retrieval-Augmented Generation (RAG) workflow that:</p>
-<ul>
-<li>loads PDF text and generates vector embeddings for each page using Ollama,</li>
-<li>stores the extracted page content and embeddings in SurrealDB,</li>
-<li>performs semantic vector search to retrieve relevant chunks for a question,</li>
-<li>synthesizes a final answer using an LLM.</li>
-</ul>
-<p>The SurrealDB server and Ollama service should be running locally. The Rust workspace includes the <code>rag_sample</code> module for loading and querying data.</p>
-<h2 id="what-this-project-does"><a class="header" href="#what-this-project-does">What This Project Does</a></h2>
-<ul>
-<li>Starts a local SurrealDB service with Docker Compose</li>
-<li>Uses Ollama (llama3.1) to generate embeddings for document chunks</li>
-<li>Inserts PDF page chunks and their embeddings into SurrealDB</li>
-<li>Performs semantic search using SurrealDB’s vector search (HNSW index)</li>
-<li>Generates a natural language answer using an LLM via Ollama</li>
-</ul>
-<h2 id="plan"><a class="header" href="#plan">Plan</a></h2>
-<ol>
-<li>Add a new Rust workspace member named <code>rag_sample</code>.</li>
-<li>Add <code>pdf-extract</code> to the workspace dependencies.</li>
-<li>Create a Docker Compose configuration for SurrealDB.</li>
-<li>Implement <code>rag_sample/src/main.rs</code> with two modes:
-<ul>
-<li><code>load &lt;path-to-pdf&gt;</code>: read the PDF and insert page chunks into SurrealDB</li>
-<li><code>ask "&lt;question&gt;"</code>: retrieve relevant PDF chunks from SurrealDB</li>
-</ul>
-</li>
-<li>Update documentation with the instructions and sample commands.</li>
-</ol>
-<h2 id="how-it-works"><a class="header" href="#how-it-works">How It Works</a></h2>
-<h3 id="loading-process"><a class="header" href="#loading-process">Loading Process</a></h3>
-<p>When you run the <code>load</code> command, the application performs the following steps:</p>
-<ol>
-<li><strong>Text Extraction</strong>: Uses <code>pdf-extract</code> to read the PDF file and split it into individual pages.</li>
-<li><strong>Indexing</strong>: Ensures a vector index (HNSW) is defined in SurrealDB for the <code>embedding</code> field.</li>
-<li><strong>Embedding Generation</strong>: For each page, it sends the text to Ollama (<code>llama3.1</code>) to generate a 4096-dimensional vector embedding.</li>
-<li><strong>Storage</strong>: Stores the page text, metadata (source file, page number), and the embedding as a record in the <code>chunk</code> table in SurrealDB.</li>
-</ol>
-<pre class="mermaid">sequenceDiagram
-    participant CLI as rag_sample load
-    participant PDF as PDF File
-    participant O as Ollama (llama3.1)
-    participant S as SurrealDB
-
-    CLI-&gt;&gt;PDF: Extract text by pages
-    CLI-&gt;&gt;S: DEFINE INDEX (HNSW)
-    loop For each page
-        CLI-&gt;&gt;O: Get embedding for page text
-        O--&gt;&gt;CLI: 4096-D Vector
-        CLI-&gt;&gt;S: CREATE chunk (text + embedding)
-    end
-</pre>
-
-<h3 id="querying-process-rag"><a class="header" href="#querying-process-rag">Querying Process (RAG)</a></h3>
-<p>When you run the <code>ask</code> command, the application executes the RAG workflow:</p>
-<ol>
-<li><strong>Question Embedding</strong>: Generates a vector embedding for your question using Ollama.</li>
-<li><strong>Semantic Search</strong>: Performs a K-Nearest Neighbors (KNN) search in SurrealDB to find the top 3 most relevant text chunks based on vector distance.</li>
-<li><strong>Context Construction</strong>: Combines the retrieved text chunks into a single context block.</li>
-<li><strong>Answer Synthesis</strong>: Sends the context and your question to Ollama. The LLM uses the provided context to generate a factual answer.</li>
-</ol>
-<pre class="mermaid">sequenceDiagram
-    participant CLI as rag_sample ask
-    participant O as Ollama (llama3.1)
-    participant S as SurrealDB
-
-    CLI-&gt;&gt;O: Get embedding for question
-    O--&gt;&gt;CLI: Question Vector
-    CLI-&gt;&gt;S: Vector Search (KNN)
-    S--&gt;&gt;CLI: Top 3 relevant chunks
-    CLI-&gt;&gt;O: Generate answer (Context + Question)
-    O--&gt;&gt;CLI: Synthesized Answer
-    CLI-&gt;&gt;User: Display Answer
-</pre>
-
-<h2 id="setup"><a class="header" href="#setup">Setup</a></h2>
-<h3 id="start-services"><a class="header" href="#start-services">Start Services</a></h3>
-<ol>
-<li>Start SurrealDB from the repository root:</li>
-</ol>
-<pre><code class="language-bash">docker compose up -d surrealdb
-</code></pre>
-<ol start="2">
-<li>Ensure Ollama is running and has the <code>llama3.1</code> model:</li>
-</ol>
-<pre><code class="language-bash">ollama run llama3.1
-</code></pre>
-<h3 id="load-a-pdf"><a class="header" href="#load-a-pdf">Load a PDF</a></h3>
-<pre><code class="language-bash">cargo run -p rag_sample -- load path/to/document.pdf
-</code></pre>
-<h3 id="sample-pdf"><a class="header" href="#sample-pdf">Sample PDF</a></h3>
-<p>Use the included sample file:</p>
-<pre><code class="language-bash">cargo run -p rag_sample -- load data/the-tale-of-peter-rabbit.pdf
-</code></pre>
-<h3 id="ask-a-question"><a class="header" href="#ask-a-question">Ask a Question</a></h3>
-<pre><code class="language-bash">cargo run -p rag_sample -- ask "Who is Peter?"
-</code></pre>
-<h2 id="notes"><a class="header" href="#notes">Notes</a></h2>
-<ul>
-<li>The sample uses vector embeddings (4096-D) for semantic retrieval.</li>
-<li>It leverages SurrealDB’s HNSW index for efficient similarity search.</li>
-<li>The final answer is generated by an LLM (llama3.1 via Ollama) using the retrieved context.</li>
-<li>The database namespace is <code>rag</code> and the database name is <code>sample</code>.</li>
-</ul>
-<h2 id="file-structure"><a class="header" href="#file-structure">File Structure</a></h2>
-<pre><code>rag_sample/
-├── Cargo.toml
-└── src/
-    └── main.rs
-</code></pre>
-<h2 id="next-steps"><a class="header" href="#next-steps">Next Steps</a></h2>
-<ul>
-<li>Implement chunking strategies (e.g., fixed-size with overlap) instead of page-level chunks.</li>
-<li>Add support for multiple PDF documents and filtered search.</li>
-<li>Explore hybrid search (combining full-text and vector search) for better accuracy.</li>
-</ul>
-<div style="break-before: page; page-break-before: always;"></div>
-<h1 id="rag-sample-introduction-to-pdf-retrieval-with-qdrant"><a class="header" href="#rag-sample-introduction-to-pdf-retrieval-with-qdrant">RAG Sample: Introduction to PDF Retrieval with Qdrant</a></h1>
-<h2 id="overview-1"><a class="header" href="#overview-1">Overview</a></h2>
 <p>This sample demonstrates a full Rust-based Retrieval-Augmented Generation (RAG) workflow that:</p>
 <ul>
 <li>loads PDF text and generates vector embeddings for each page using Ollama,</li>
@@ -431,7 +184,7 @@ Keyword 5: socks
 <li>synthesizes a final answer using an LLM.</li>
 </ul>
 <p>The Qdrant server and Ollama service should be running locally. The Rust workspace includes the <code>rag_qdrant</code> module for loading and querying data.</p>
-<h2 id="what-this-project-does-1"><a class="header" href="#what-this-project-does-1">What This Project Does</a></h2>
+<h2 id="what-this-project-does"><a class="header" href="#what-this-project-does">What This Project Does</a></h2>
 <ul>
 <li>Starts a local Qdrant service with Docker Compose</li>
 <li>Uses Ollama (llama3.1) to generate embeddings for document chunks</li>
@@ -439,7 +192,7 @@ Keyword 5: socks
 <li>Performs semantic search using Qdrant’s vector search</li>
 <li>Generates a natural language answer using an LLM via Ollama</li>
 </ul>
-<h2 id="plan-1"><a class="header" href="#plan-1">Plan</a></h2>
+<h2 id="plan"><a class="header" href="#plan">Plan</a></h2>
 <ol>
 <li>Add a new Rust workspace member named <code>rag_qdrant</code>.</li>
 <li>Add <code>pdf-extract</code> and <code>uuid</code> to the workspace dependencies.</li>
@@ -452,8 +205,8 @@ Keyword 5: socks
 </li>
 <li>Update documentation with the instructions and sample commands.</li>
 </ol>
-<h2 id="how-it-works-1"><a class="header" href="#how-it-works-1">How It Works</a></h2>
-<h3 id="loading-process-1"><a class="header" href="#loading-process-1">Loading Process</a></h3>
+<h2 id="how-it-works"><a class="header" href="#how-it-works">How It Works</a></h2>
+<h3 id="loading-process"><a class="header" href="#loading-process">Loading Process</a></h3>
 <p>When you run the <code>load</code> command, the application performs the following steps:</p>
 <ol>
 <li><strong>Text Extraction</strong>: Uses <code>pdf-extract</code> to read the PDF file and split it into individual pages.</li>
@@ -476,7 +229,7 @@ Keyword 5: socks
     end
 </pre>
 
-<h3 id="querying-process-rag-1"><a class="header" href="#querying-process-rag-1">Querying Process (RAG)</a></h3>
+<h3 id="querying-process-rag"><a class="header" href="#querying-process-rag">Querying Process (RAG)</a></h3>
 <p>When you run the <code>ask</code> command, the application executes the RAG workflow:</p>
 <ol>
 <li><strong>Question Embedding</strong>: Generates a vector embedding for your question using Ollama.</li>
@@ -498,8 +251,8 @@ Keyword 5: socks
     CLI-&gt;&gt;User: Display Answer
 </pre>
 
-<h2 id="setup-1"><a class="header" href="#setup-1">Setup</a></h2>
-<h3 id="start-services-1"><a class="header" href="#start-services-1">Start Services</a></h3>
+<h2 id="setup"><a class="header" href="#setup">Setup</a></h2>
+<h3 id="start-services"><a class="header" href="#start-services">Start Services</a></h3>
 <ol>
 <li>Start Qdrant from the repository root:</li>
 </ol>
@@ -516,30 +269,30 @@ Open <a href="http://localhost:6333/dashboard">http://localhost:6333/dashboard</
 </ol>
 <pre><code class="language-bash">ollama run llama3.1
 </code></pre>
-<h3 id="load-a-pdf-1"><a class="header" href="#load-a-pdf-1">Load a PDF</a></h3>
+<h3 id="load-a-pdf"><a class="header" href="#load-a-pdf">Load a PDF</a></h3>
 <pre><code class="language-bash">cargo run -p rag_qdrant -- load path/to/document.pdf
 </code></pre>
-<h3 id="sample-pdf-1"><a class="header" href="#sample-pdf-1">Sample PDF</a></h3>
+<h3 id="sample-pdf"><a class="header" href="#sample-pdf">Sample PDF</a></h3>
 <p>Use the included sample file:</p>
 <pre><code class="language-bash">cargo run -p rag_qdrant -- load data/the-tale-of-peter-rabbit.pdf
 </code></pre>
-<h3 id="ask-a-question-1"><a class="header" href="#ask-a-question-1">Ask a Question</a></h3>
+<h3 id="ask-a-question"><a class="header" href="#ask-a-question">Ask a Question</a></h3>
 <pre><code class="language-bash">cargo run -p rag_qdrant -- ask "Who is Peter?"
 </code></pre>
-<h2 id="notes-1"><a class="header" href="#notes-1">Notes</a></h2>
+<h2 id="notes"><a class="header" href="#notes">Notes</a></h2>
 <ul>
 <li>The sample uses vector embeddings (4096-D) for semantic retrieval.</li>
 <li>It leverages Qdrant’s efficient similarity search.</li>
 <li>The final answer is generated by an LLM (llama3.1 via Ollama) using the retrieved context.</li>
 <li>The collection name is <code>pdf_chunks</code>.</li>
 </ul>
-<h2 id="file-structure-1"><a class="header" href="#file-structure-1">File Structure</a></h2>
+<h2 id="file-structure"><a class="header" href="#file-structure">File Structure</a></h2>
 <pre><code>rag_qdrant/
 ├── Cargo.toml
 └── src/
     └── main.rs
 </code></pre>
-<h2 id="next-steps-1"><a class="header" href="#next-steps-1">Next Steps</a></h2>
+<h2 id="next-steps"><a class="header" href="#next-steps">Next Steps</a></h2>
 <ul>
 <li>Implement chunking strategies (e.g., fixed-size with overlap) instead of page-level chunks.</li>
 <li>Add support for multiple PDF documents and filtered search.</li>
@@ -550,6 +303,9 @@ Open <a href="http://localhost:6333/dashboard">http://localhost:6333/dashboard</
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="rag_sample.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
 
 
                         <div style="clear: both"></div>
@@ -558,6 +314,9 @@ Open <a href="http://localhost:6333/dashboard">http://localhost:6333/dashboard</
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="rag_sample.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
 
             </nav>
 
@@ -588,11 +347,6 @@ Open <a href="http://localhost:6333/dashboard">http://localhost:6333/dashboard</
         <script src="mermaid-eefea253.min.js"></script>
         <script src="mermaid-init-ccf746f1.js"></script>
 
-        <script>
-        window.addEventListener('load', function() {
-            window.setTimeout(window.print, 100);
-        });
-        </script>
 
 
     </div>
