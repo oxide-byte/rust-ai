@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Rust Enterprise Edition</title>
+        <title>Rust AI</title>
         <meta name="robots" content="noindex">
 
 
@@ -36,10 +36,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-f093e38d.js";
+            window.path_to_searchindex_js = "searchindex-5b9af175.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-0581c7e9.js"></script>
+        <script src="toc-f27b7f52.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -138,7 +138,7 @@
                         </button>
                     </div>
 
-                    <h1 class="menu-title">Rust Enterprise Edition</h1>
+                    <h1 class="menu-title">Rust AI</h1>
 
                     <div class="right-buttons">
                         <a href="print.html" title="Print this book" aria-label="Print this book">
@@ -302,127 +302,8 @@ Keyword 5: socks
 <li>Creating multi-turn conversations</li>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="rag-sample-introduction-to-pdf-retrieval-with-surrealdb"><a class="header" href="#rag-sample-introduction-to-pdf-retrieval-with-surrealdb">RAG Sample: Introduction to PDF Retrieval with SurrealDB</a></h1>
-<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
-<p>This sample demonstrates a full Rust-based Retrieval-Augmented Generation (RAG) workflow that:</p>
-<ul>
-<li>loads PDF text and generates vector embeddings for each page using Ollama,</li>
-<li>stores the extracted page content and embeddings in SurrealDB,</li>
-<li>performs semantic vector search to retrieve relevant chunks for a question,</li>
-<li>synthesizes a final answer using an LLM.</li>
-</ul>
-<p>The SurrealDB server and Ollama service should be running locally. The Rust workspace includes the <code>rag_sample</code> module for loading and querying data.</p>
-<h2 id="what-this-project-does"><a class="header" href="#what-this-project-does">What This Project Does</a></h2>
-<ul>
-<li>Starts a local SurrealDB service with Docker Compose</li>
-<li>Uses Ollama (llama3.1) to generate embeddings for document chunks</li>
-<li>Inserts PDF page chunks and their embeddings into SurrealDB</li>
-<li>Performs semantic search using SurrealDB’s vector search (HNSW index)</li>
-<li>Generates a natural language answer using an LLM via Ollama</li>
-</ul>
-<h2 id="plan"><a class="header" href="#plan">Plan</a></h2>
-<ol>
-<li>Add a new Rust workspace member named <code>rag_sample</code>.</li>
-<li>Add <code>pdf-extract</code> to the workspace dependencies.</li>
-<li>Create a Docker Compose configuration for SurrealDB.</li>
-<li>Implement <code>rag_sample/src/main.rs</code> with two modes:
-<ul>
-<li><code>load &lt;path-to-pdf&gt;</code>: read the PDF and insert page chunks into SurrealDB</li>
-<li><code>ask "&lt;question&gt;"</code>: retrieve relevant PDF chunks from SurrealDB</li>
-</ul>
-</li>
-<li>Update documentation with the instructions and sample commands.</li>
-</ol>
-<h2 id="how-it-works"><a class="header" href="#how-it-works">How It Works</a></h2>
-<h3 id="loading-process"><a class="header" href="#loading-process">Loading Process</a></h3>
-<p>When you run the <code>load</code> command, the application performs the following steps:</p>
-<ol>
-<li><strong>Text Extraction</strong>: Uses <code>pdf-extract</code> to read the PDF file and split it into individual pages.</li>
-<li><strong>Indexing</strong>: Ensures a vector index (HNSW) is defined in SurrealDB for the <code>embedding</code> field.</li>
-<li><strong>Embedding Generation</strong>: For each page, it sends the text to Ollama (<code>llama3.1</code>) to generate a 4096-dimensional vector embedding.</li>
-<li><strong>Storage</strong>: Stores the page text, metadata (source file, page number), and the embedding as a record in the <code>chunk</code> table in SurrealDB.</li>
-</ol>
-<pre class="mermaid">sequenceDiagram
-    participant CLI as rag_sample load
-    participant PDF as PDF File
-    participant O as Ollama (llama3.1)
-    participant S as SurrealDB
-
-    CLI-&gt;&gt;PDF: Extract text by pages
-    CLI-&gt;&gt;S: DEFINE INDEX (HNSW)
-    loop For each page
-        CLI-&gt;&gt;O: Get embedding for page text
-        O--&gt;&gt;CLI: 4096-D Vector
-        CLI-&gt;&gt;S: CREATE chunk (text + embedding)
-    end
-</pre>
-
-<h3 id="querying-process-rag"><a class="header" href="#querying-process-rag">Querying Process (RAG)</a></h3>
-<p>When you run the <code>ask</code> command, the application executes the RAG workflow:</p>
-<ol>
-<li><strong>Question Embedding</strong>: Generates a vector embedding for your question using Ollama.</li>
-<li><strong>Semantic Search</strong>: Performs a K-Nearest Neighbors (KNN) search in SurrealDB to find the top 3 most relevant text chunks based on vector distance.</li>
-<li><strong>Context Construction</strong>: Combines the retrieved text chunks into a single context block.</li>
-<li><strong>Answer Synthesis</strong>: Sends the context and your question to Ollama. The LLM uses the provided context to generate a factual answer.</li>
-</ol>
-<pre class="mermaid">sequenceDiagram
-    participant CLI as rag_sample ask
-    participant O as Ollama (llama3.1)
-    participant S as SurrealDB
-
-    CLI-&gt;&gt;O: Get embedding for question
-    O--&gt;&gt;CLI: Question Vector
-    CLI-&gt;&gt;S: Vector Search (KNN)
-    S--&gt;&gt;CLI: Top 3 relevant chunks
-    CLI-&gt;&gt;O: Generate answer (Context + Question)
-    O--&gt;&gt;CLI: Synthesized Answer
-    CLI-&gt;&gt;User: Display Answer
-</pre>
-
-<h2 id="setup"><a class="header" href="#setup">Setup</a></h2>
-<h3 id="start-services"><a class="header" href="#start-services">Start Services</a></h3>
-<ol>
-<li>Start SurrealDB from the repository root:</li>
-</ol>
-<pre><code class="language-bash">docker compose up -d surrealdb
-</code></pre>
-<ol start="2">
-<li>Ensure Ollama is running and has the <code>llama3.1</code> model:</li>
-</ol>
-<pre><code class="language-bash">ollama run llama3.1
-</code></pre>
-<h3 id="load-a-pdf"><a class="header" href="#load-a-pdf">Load a PDF</a></h3>
-<pre><code class="language-bash">cargo run -p rag_sample -- load path/to/document.pdf
-</code></pre>
-<h3 id="sample-pdf"><a class="header" href="#sample-pdf">Sample PDF</a></h3>
-<p>Use the included sample file:</p>
-<pre><code class="language-bash">cargo run -p rag_sample -- load data/the-tale-of-peter-rabbit.pdf
-</code></pre>
-<h3 id="ask-a-question"><a class="header" href="#ask-a-question">Ask a Question</a></h3>
-<pre><code class="language-bash">cargo run -p rag_sample -- ask "Who is Peter?"
-</code></pre>
-<h2 id="notes"><a class="header" href="#notes">Notes</a></h2>
-<ul>
-<li>The sample uses vector embeddings (4096-D) for semantic retrieval.</li>
-<li>It leverages SurrealDB’s HNSW index for efficient similarity search.</li>
-<li>The final answer is generated by an LLM (llama3.1 via Ollama) using the retrieved context.</li>
-<li>The database namespace is <code>rag</code> and the database name is <code>sample</code>.</li>
-</ul>
-<h2 id="file-structure"><a class="header" href="#file-structure">File Structure</a></h2>
-<pre><code>rag_sample/
-├── Cargo.toml
-└── src/
-    └── main.rs
-</code></pre>
-<h2 id="next-steps"><a class="header" href="#next-steps">Next Steps</a></h2>
-<ul>
-<li>Implement chunking strategies (e.g., fixed-size with overlap) instead of page-level chunks.</li>
-<li>Add support for multiple PDF documents and filtered search.</li>
-<li>Explore hybrid search (combining full-text and vector search) for better accuracy.</li>
-</ul>
-<div style="break-before: page; page-break-before: always;"></div>
 <h1 id="rag-sample-introduction-to-pdf-retrieval-with-qdrant"><a class="header" href="#rag-sample-introduction-to-pdf-retrieval-with-qdrant">RAG Sample: Introduction to PDF Retrieval with Qdrant</a></h1>
-<h2 id="overview-1"><a class="header" href="#overview-1">Overview</a></h2>
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
 <p>This sample demonstrates a full Rust-based Retrieval-Augmented Generation (RAG) workflow that:</p>
 <ul>
 <li>loads PDF text and generates vector embeddings for each page using Ollama,</li>
@@ -431,7 +312,7 @@ Keyword 5: socks
 <li>synthesizes a final answer using an LLM.</li>
 </ul>
 <p>The Qdrant server and Ollama service should be running locally. The Rust workspace includes the <code>rag_qdrant</code> module for loading and querying data.</p>
-<h2 id="what-this-project-does-1"><a class="header" href="#what-this-project-does-1">What This Project Does</a></h2>
+<h2 id="what-this-project-does"><a class="header" href="#what-this-project-does">What This Project Does</a></h2>
 <ul>
 <li>Starts a local Qdrant service with Docker Compose</li>
 <li>Uses Ollama (llama3.1) to generate embeddings for document chunks</li>
@@ -439,7 +320,7 @@ Keyword 5: socks
 <li>Performs semantic search using Qdrant’s vector search</li>
 <li>Generates a natural language answer using an LLM via Ollama</li>
 </ul>
-<h2 id="plan-1"><a class="header" href="#plan-1">Plan</a></h2>
+<h2 id="plan"><a class="header" href="#plan">Plan</a></h2>
 <ol>
 <li>Add a new Rust workspace member named <code>rag_qdrant</code>.</li>
 <li>Add <code>pdf-extract</code> and <code>uuid</code> to the workspace dependencies.</li>
@@ -452,8 +333,8 @@ Keyword 5: socks
 </li>
 <li>Update documentation with the instructions and sample commands.</li>
 </ol>
-<h2 id="how-it-works-1"><a class="header" href="#how-it-works-1">How It Works</a></h2>
-<h3 id="loading-process-1"><a class="header" href="#loading-process-1">Loading Process</a></h3>
+<h2 id="how-it-works"><a class="header" href="#how-it-works">How It Works</a></h2>
+<h3 id="loading-process"><a class="header" href="#loading-process">Loading Process</a></h3>
 <p>When you run the <code>load</code> command, the application performs the following steps:</p>
 <ol>
 <li><strong>Text Extraction</strong>: Uses <code>pdf-extract</code> to read the PDF file and split it into individual pages.</li>
@@ -476,7 +357,7 @@ Keyword 5: socks
     end
 </pre>
 
-<h3 id="querying-process-rag-1"><a class="header" href="#querying-process-rag-1">Querying Process (RAG)</a></h3>
+<h3 id="querying-process-rag"><a class="header" href="#querying-process-rag">Querying Process (RAG)</a></h3>
 <p>When you run the <code>ask</code> command, the application executes the RAG workflow:</p>
 <ol>
 <li><strong>Question Embedding</strong>: Generates a vector embedding for your question using Ollama.</li>
@@ -498,8 +379,8 @@ Keyword 5: socks
     CLI-&gt;&gt;User: Display Answer
 </pre>
 
-<h2 id="setup-1"><a class="header" href="#setup-1">Setup</a></h2>
-<h3 id="start-services-1"><a class="header" href="#start-services-1">Start Services</a></h3>
+<h2 id="setup"><a class="header" href="#setup">Setup</a></h2>
+<h3 id="start-services"><a class="header" href="#start-services">Start Services</a></h3>
 <ol>
 <li>Start Qdrant from the repository root:</li>
 </ol>
@@ -516,25 +397,144 @@ Open <a href="http://localhost:6333/dashboard">http://localhost:6333/dashboard</
 </ol>
 <pre><code class="language-bash">ollama run llama3.1
 </code></pre>
-<h3 id="load-a-pdf-1"><a class="header" href="#load-a-pdf-1">Load a PDF</a></h3>
+<h3 id="load-a-pdf"><a class="header" href="#load-a-pdf">Load a PDF</a></h3>
 <pre><code class="language-bash">cargo run -p rag_qdrant -- load path/to/document.pdf
 </code></pre>
-<h3 id="sample-pdf-1"><a class="header" href="#sample-pdf-1">Sample PDF</a></h3>
+<h3 id="sample-pdf"><a class="header" href="#sample-pdf">Sample PDF</a></h3>
 <p>Use the included sample file:</p>
 <pre><code class="language-bash">cargo run -p rag_qdrant -- load data/the-tale-of-peter-rabbit.pdf
 </code></pre>
-<h3 id="ask-a-question-1"><a class="header" href="#ask-a-question-1">Ask a Question</a></h3>
+<h3 id="ask-a-question"><a class="header" href="#ask-a-question">Ask a Question</a></h3>
 <pre><code class="language-bash">cargo run -p rag_qdrant -- ask "Who is Peter?"
 </code></pre>
-<h2 id="notes-1"><a class="header" href="#notes-1">Notes</a></h2>
+<h2 id="notes"><a class="header" href="#notes">Notes</a></h2>
 <ul>
 <li>The sample uses vector embeddings (4096-D) for semantic retrieval.</li>
 <li>It leverages Qdrant’s efficient similarity search.</li>
 <li>The final answer is generated by an LLM (llama3.1 via Ollama) using the retrieved context.</li>
 <li>The collection name is <code>pdf_chunks</code>.</li>
 </ul>
-<h2 id="file-structure-1"><a class="header" href="#file-structure-1">File Structure</a></h2>
+<h2 id="file-structure"><a class="header" href="#file-structure">File Structure</a></h2>
 <pre><code>rag_qdrant/
+├── Cargo.toml
+└── src/
+    └── main.rs
+</code></pre>
+<h2 id="next-steps"><a class="header" href="#next-steps">Next Steps</a></h2>
+<ul>
+<li>Implement chunking strategies (e.g., fixed-size with overlap) instead of page-level chunks.</li>
+<li>Add support for multiple PDF documents and filtered search.</li>
+<li>Explore hybrid search (combining full-text and vector search) for better accuracy.</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="rag-sample-introduction-to-pdf-retrieval-with-surrealdb"><a class="header" href="#rag-sample-introduction-to-pdf-retrieval-with-surrealdb">RAG Sample: Introduction to PDF Retrieval with SurrealDB</a></h1>
+<h2 id="overview-1"><a class="header" href="#overview-1">Overview</a></h2>
+<p>This sample demonstrates a full Rust-based Retrieval-Augmented Generation (RAG) workflow that:</p>
+<ul>
+<li>loads PDF text and generates vector embeddings for each page using Ollama,</li>
+<li>stores the extracted page content and embeddings in SurrealDB,</li>
+<li>performs semantic vector search to retrieve relevant chunks for a question,</li>
+<li>synthesizes a final answer using an LLM.</li>
+</ul>
+<p>The SurrealDB server and Ollama service should be running locally. The Rust workspace includes the <code>rag_surrealdb</code> module for loading and querying data.</p>
+<h2 id="what-this-project-does-1"><a class="header" href="#what-this-project-does-1">What This Project Does</a></h2>
+<ul>
+<li>Starts a local SurrealDB service with Docker Compose</li>
+<li>Uses Ollama (llama3.1) to generate embeddings for document chunks</li>
+<li>Inserts PDF page chunks and their embeddings into SurrealDB</li>
+<li>Performs semantic search using SurrealDB’s vector search (HNSW index)</li>
+<li>Generates a natural language answer using an LLM via Ollama</li>
+</ul>
+<h2 id="plan-1"><a class="header" href="#plan-1">Plan</a></h2>
+<ol>
+<li>Add a new Rust workspace member named <code>rag_surrealdb</code>.</li>
+<li>Add <code>pdf-extract</code> to the workspace dependencies.</li>
+<li>Create a Docker Compose configuration for SurrealDB.</li>
+<li>Implement <code>rag_surrealdb/src/main.rs</code> with two modes:
+<ul>
+<li><code>load &lt;path-to-pdf&gt;</code>: read the PDF and insert page chunks into SurrealDB</li>
+<li><code>ask "&lt;question&gt;"</code>: retrieve relevant PDF chunks from SurrealDB</li>
+</ul>
+</li>
+<li>Update documentation with the instructions and sample commands.</li>
+</ol>
+<h2 id="how-it-works-1"><a class="header" href="#how-it-works-1">How It Works</a></h2>
+<h3 id="loading-process-1"><a class="header" href="#loading-process-1">Loading Process</a></h3>
+<p>When you run the <code>load</code> command, the application performs the following steps:</p>
+<ol>
+<li><strong>Text Extraction</strong>: Uses <code>pdf-extract</code> to read the PDF file and split it into individual pages.</li>
+<li><strong>Indexing</strong>: Ensures a vector index (HNSW) is defined in SurrealDB for the <code>embedding</code> field.</li>
+<li><strong>Embedding Generation</strong>: For each page, it sends the text to Ollama (<code>llama3.1</code>) to generate a 4096-dimensional vector embedding.</li>
+<li><strong>Storage</strong>: Stores the page text, metadata (source file, page number), and the embedding as a record in the <code>chunk</code> table in SurrealDB.</li>
+</ol>
+<pre class="mermaid">sequenceDiagram
+    participant CLI as rag_surrealdb load
+    participant PDF as PDF File
+    participant O as Ollama (llama3.1)
+    participant S as SurrealDB
+
+    CLI-&gt;&gt;PDF: Extract text by pages
+    CLI-&gt;&gt;S: DEFINE INDEX (HNSW)
+    loop For each page
+        CLI-&gt;&gt;O: Get embedding for page text
+        O--&gt;&gt;CLI: 4096-D Vector
+        CLI-&gt;&gt;S: CREATE chunk (text + embedding)
+    end
+</pre>
+
+<h3 id="querying-process-rag-1"><a class="header" href="#querying-process-rag-1">Querying Process (RAG)</a></h3>
+<p>When you run the <code>ask</code> command, the application executes the RAG workflow:</p>
+<ol>
+<li><strong>Question Embedding</strong>: Generates a vector embedding for your question using Ollama.</li>
+<li><strong>Semantic Search</strong>: Performs a K-Nearest Neighbors (KNN) search in SurrealDB to find the top 3 most relevant text chunks based on vector distance.</li>
+<li><strong>Context Construction</strong>: Combines the retrieved text chunks into a single context block.</li>
+<li><strong>Answer Synthesis</strong>: Sends the context and your question to Ollama. The LLM uses the provided context to generate a factual answer.</li>
+</ol>
+<pre class="mermaid">sequenceDiagram
+    participant CLI as rag_surrealdb ask
+    participant O as Ollama (llama3.1)
+    participant S as SurrealDB
+
+    CLI-&gt;&gt;O: Get embedding for question
+    O--&gt;&gt;CLI: Question Vector
+    CLI-&gt;&gt;S: Vector Search (KNN)
+    S--&gt;&gt;CLI: Top 3 relevant chunks
+    CLI-&gt;&gt;O: Generate answer (Context + Question)
+    O--&gt;&gt;CLI: Synthesized Answer
+    CLI-&gt;&gt;User: Display Answer
+</pre>
+
+<h2 id="setup-1"><a class="header" href="#setup-1">Setup</a></h2>
+<h3 id="start-services-1"><a class="header" href="#start-services-1">Start Services</a></h3>
+<ol>
+<li>Start SurrealDB from the repository root:</li>
+</ol>
+<pre><code class="language-bash">docker compose up -d surrealdb
+</code></pre>
+<ol start="2">
+<li>Ensure Ollama is running and has the <code>llama3.1</code> model:</li>
+</ol>
+<pre><code class="language-bash">ollama run llama3.1
+</code></pre>
+<h3 id="load-a-pdf-1"><a class="header" href="#load-a-pdf-1">Load a PDF</a></h3>
+<pre><code class="language-bash">cargo run -p rag_surrealdb -- load path/to/document.pdf
+</code></pre>
+<h3 id="sample-pdf-1"><a class="header" href="#sample-pdf-1">Sample PDF</a></h3>
+<p>Use the included sample file:</p>
+<pre><code class="language-bash">cargo run -p rag_surrealdb -- load data/the-tale-of-peter-rabbit.pdf
+</code></pre>
+<h3 id="ask-a-question-1"><a class="header" href="#ask-a-question-1">Ask a Question</a></h3>
+<pre><code class="language-bash">cargo run -p rag_surrealdb -- ask "Who is Peter?"
+</code></pre>
+<h2 id="notes-1"><a class="header" href="#notes-1">Notes</a></h2>
+<ul>
+<li>The sample uses vector embeddings (4096-D) for semantic retrieval.</li>
+<li>It leverages SurrealDB’s HNSW index for efficient similarity search.</li>
+<li>The final answer is generated by an LLM (llama3.1 via Ollama) using the retrieved context.</li>
+<li>The database namespace is <code>rag</code> and the database name is <code>sample</code>.</li>
+</ul>
+<h2 id="file-structure-1"><a class="header" href="#file-structure-1">File Structure</a></h2>
+<pre><code>rag_surrealdb/
 ├── Cargo.toml
 └── src/
     └── main.rs
@@ -545,6 +545,277 @@ Open <a href="http://localhost:6333/dashboard">http://localhost:6333/dashboard</
 <li>Add support for multiple PDF documents and filtered search.</li>
 <li>Explore hybrid search (combining full-text and vector search) for better accuracy.</li>
 </ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="rag-sample-introduction-to-pdf-retrieval-with-elasticsearch"><a class="header" href="#rag-sample-introduction-to-pdf-retrieval-with-elasticsearch">RAG Sample: Introduction to PDF Retrieval with Elasticsearch</a></h1>
+<h2 id="overview-2"><a class="header" href="#overview-2">Overview</a></h2>
+<p>This sample demonstrates a full Rust-based Retrieval-Augmented Generation (RAG) workflow that:</p>
+<ul>
+<li>loads PDF text and generates vector embeddings for each page using Ollama,</li>
+<li>stores the extracted page content and embeddings in Elasticsearch,</li>
+<li>performs semantic vector search (k-NN) to retrieve relevant chunks for a question,</li>
+<li>synthesizes a final answer using an LLM.</li>
+</ul>
+<p>The Elasticsearch server and Ollama service should be running locally. The Rust workspace includes the <code>rag_elasticsearch</code> module for loading and querying data.</p>
+<h2 id="what-this-project-does-2"><a class="header" href="#what-this-project-does-2">What This Project Does</a></h2>
+<ul>
+<li>Starts a local Elasticsearch service with Docker Compose</li>
+<li>Uses Ollama (llama3.1) to generate embeddings for document chunks</li>
+<li>Inserts PDF page chunks and their embeddings into Elasticsearch</li>
+<li>Performs semantic search using Elasticsearch’s <code>dense_vector</code> type and k-NN search</li>
+<li>Generates a natural language answer using an LLM via Ollama</li>
+</ul>
+<h2 id="plan-2"><a class="header" href="#plan-2">Plan</a></h2>
+<ol>
+<li>Add a new Rust workspace member named <code>rag_elasticsearch</code>.</li>
+<li>Add necessary dependencies to the workspace.</li>
+<li>Create a Docker Compose configuration for Elasticsearch.</li>
+<li>Implement <code>rag_elasticsearch/src/main.rs</code> with two modes:
+<ul>
+<li><code>load &lt;path-to-pdf&gt;</code>: read the PDF and insert page chunks into Elasticsearch</li>
+<li><code>ask "&lt;question&gt;"</code>: retrieve relevant PDF chunks from Elasticsearch</li>
+</ul>
+</li>
+<li>Update documentation with the instructions and sample commands.</li>
+</ol>
+<h2 id="how-it-works-2"><a class="header" href="#how-it-works-2">How It Works</a></h2>
+<h3 id="loading-process-2"><a class="header" href="#loading-process-2">Loading Process</a></h3>
+<p>When you run the <code>load</code> command, the application performs the following steps:</p>
+<ol>
+<li><strong>Text Extraction</strong>: Uses <code>pdf-extract</code> to read the PDF file and split it into individual pages.</li>
+<li><strong>Indexing</strong>: Ensures an index is defined in Elasticsearch with a <code>dense_vector</code> mapping for the <code>embedding</code> field.</li>
+<li><strong>Embedding Generation</strong>: For each page, it sends the text to Ollama (<code>llama3.1</code>) to generate a 4096-dimensional vector embedding.</li>
+<li><strong>Storage</strong>: Stores the page text, metadata (source file, page number), and the embedding as a document in Elasticsearch.</li>
+</ol>
+<pre class="mermaid">sequenceDiagram
+    participant CLI as rag_elasticsearch load
+    participant PDF as PDF File
+    participant O as Ollama (llama3.1)
+    participant ES as Elasticsearch
+
+    CLI-&gt;&gt;PDF: Extract text by pages
+    CLI-&gt;&gt;ES: CREATE INDEX (mappings)
+    loop For each page
+        CLI-&gt;&gt;O: Get embedding for page text
+        O--&gt;&gt;CLI: 4096-D Vector
+        CLI-&gt;&gt;ES: INDEX _doc (text + embedding)
+    end
+</pre>
+
+<h3 id="querying-process-rag-2"><a class="header" href="#querying-process-rag-2">Querying Process (RAG)</a></h3>
+<p>When you run the <code>ask</code> command, the application executes the RAG workflow:</p>
+<ol>
+<li><strong>Question Embedding</strong>: Generates a vector embedding for your question using Ollama.</li>
+<li><strong>Semantic Search</strong>: Performs a k-Nearest Neighbors (k-NN) search in Elasticsearch to find the top 3 most relevant text chunks based on cosine similarity.</li>
+<li><strong>Context Construction</strong>: Combines the retrieved text chunks into a single context block.</li>
+<li><strong>Answer Synthesis</strong>: Sends the context and your question to Ollama. The LLM uses the provided context to generate a factual answer.</li>
+</ol>
+<pre class="mermaid">sequenceDiagram
+    participant CLI as rag_elasticsearch ask
+    participant O as Ollama (llama3.1)
+    participant ES as Elasticsearch
+
+    CLI-&gt;&gt;O: Get embedding for question
+    O--&gt;&gt;CLI: Question Vector
+    CLI-&gt;&gt;ES: k-NN Search
+    ES--&gt;&gt;CLI: Top 3 relevant chunks
+    CLI-&gt;&gt;O: Generate answer (Context + Question)
+    O--&gt;&gt;CLI: Synthesized Answer
+    CLI-&gt;&gt;User: Display Answer
+</pre>
+
+<h2 id="setup-2"><a class="header" href="#setup-2">Setup</a></h2>
+<h3 id="start-services-2"><a class="header" href="#start-services-2">Start Services</a></h3>
+<ol>
+<li>Start Elasticsearch from the repository root:</li>
+</ol>
+<pre><code class="language-bash">docker compose up -d elasticsearch
+</code></pre>
+<ol start="2">
+<li>Ensure Ollama is running and has the <code>llama3.1</code> model:</li>
+</ol>
+<pre><code class="language-bash">ollama run llama3.1
+</code></pre>
+<h3 id="load-a-pdf-2"><a class="header" href="#load-a-pdf-2">Load a PDF</a></h3>
+<pre><code class="language-bash">cargo run -p rag_elasticsearch -- load path/to/document.pdf
+</code></pre>
+<h3 id="sample-pdf-2"><a class="header" href="#sample-pdf-2">Sample PDF</a></h3>
+<p>Use the included sample file:</p>
+<pre><code class="language-bash">cargo run -p rag_elasticsearch -- load data/the-tale-of-peter-rabbit.pdf
+</code></pre>
+<h3 id="ask-a-question-2"><a class="header" href="#ask-a-question-2">Ask a Question</a></h3>
+<pre><code class="language-bash">cargo run -p rag_elasticsearch -- ask "Who is Peter?"
+</code></pre>
+<h2 id="notes-2"><a class="header" href="#notes-2">Notes</a></h2>
+<ul>
+<li>The sample uses <code>dense_vector</code> (4096-D) for semantic retrieval in Elasticsearch.</li>
+<li>It leverages Elasticsearch’s k-NN search capabilities.</li>
+<li>The final answer is generated by an LLM (llama3.1 via Ollama) using the retrieved context.</li>
+</ul>
+<h2 id="file-structure-2"><a class="header" href="#file-structure-2">File Structure</a></h2>
+<pre><code>rag_elasticsearch/
+├── Cargo.toml
+└── src/
+    └── main.rs
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="compare"><a class="header" href="#compare">Compare</a></h1>
+<h2 id="elastic-search"><a class="header" href="#elastic-search">Elastic Search</a></h2>
+<pre><code class="language-text">cargo run -p rag_elasticsearch -- load data/the-tale-of-peter-rabbit.pdf
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.55s
+     Running `target/debug/rag_elasticsearch load data/the-tale-of-peter-rabbit.pdf`
+Extracting text from data/the-tale-of-peter-rabbit.pdf...
+Creating index 'pdf_chunks' with dense_vector mapping...
+Processed page 1...
+Processed page 2...
+Processed page 3...
+Processed page 4...
+Processed page 5...
+Processed page 6...
+Processed page 7...
+Processed page 8...
+Processed page 9...
+Processed page 10...
+Processed page 11...
+Processed page 12...
+Processed page 13...
+Processed page 14...
+Loaded all page chunks into Elasticsearch.
+
+cargo run -p rag_elasticsearch -- ask "Who is Peter?"
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.55s
+     Running `target/debug/rag_elasticsearch ask 'Who is Peter?'`
+Generating embedding for the question...
+Searching for relevant chunks in Elasticsearch...
+Top matches for: "Who is Peter?"
+
+Result 1 (source=the-tale-of-peter-rabbit.pdf, page=5, score=0.7578453):
+And then, feeling rather sick, he went to look for some parsley.  But round the end of a cucumber frame, whom should he meet but Mr. McGregor!
+
+Result 2 (source=the-tale-of-peter-rabbit.pdf, page=9, score=0.7525861):
+Mr. McGregor was quite sure that Peter was somewhere in the toolshed, perhaps hidden  underneath a flower-pot. He began to turn them over carefully, looking under each.  Presently Peter sneezed— “Kertyschoo!” Mr. McGregor was after him in no time,
+
+Result 3 (source=the-tale-of-peter-rabbit.pdf, page=2, score=0.713193):
+“Now, my dears,” said old Mrs. Rabbit one morning, “you may go into the fields or down the  lane, but don’t go into Mr. McGregor’s garden: your Father had an accident there; he was put in  a pie by Mrs. McGregor.” 
+
+Generating answer with Ollama...
+
+Answer:
+According to the context, Peter refers to Peter Rabbit, a young rabbit who lives with his mother, old Mrs. Rabbit. He is the main character in the story and is known for getting into trouble by visiting Mr. McGregor's garden despite his mother's warnings.
+</code></pre>
+<h2 id="qdrant"><a class="header" href="#qdrant">QDRANT</a></h2>
+<pre><code class="language-text">cargo run -p rag_qdrant -- load data/the-tale-of-peter-rabbit.pdf
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.16s
+     Running `target/debug/rag_qdrant load data/the-tale-of-peter-rabbit.pdf`
+Extracting text from data/the-tale-of-peter-rabbit.pdf...
+Creating collection 'pdf_chunks'...
+Processed page 1...
+Processed page 2...
+Processed page 3...
+Processed page 4...
+Processed page 5...
+Processed page 6...
+Processed page 7...
+Processed page 8...
+Processed page 9...
+Processed page 10...
+Processed page 11...
+Processed page 12...
+Processed page 13...
+Processed page 14...
+Loaded all page chunks into Qdrant.
+Ask questions with: cargo run -p rag_sample -- ask "your question"
+
+cargo run -p rag_qdrant -- ask "Who is Peter?"
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.62s
+     Running `target/debug/rag_qdrant ask 'Who is Peter?'`
+Generating embedding for the question...
+Searching for relevant chunks in Qdrant...
+Top matches for: "Who is Peter?"
+
+Result 1 (source=the-tale-of-peter-rabbit.pdf, page=5, score=0.5156903):
+And then, feeling rather sick, he went to look for some parsley.  But round the end of a cucumber frame, whom should he meet but Mr. McGregor!
+
+Result 2 (source=the-tale-of-peter-rabbit.pdf, page=9, score=0.5051725):
+Mr. McGregor was quite sure that Peter was somewhere in the toolshed, perhaps hidden  underneath a flower-pot. He began to turn them over carefully, looking under each.  Presently Peter sneezed— “Kertyschoo!” Mr. McGregor was after him in no time,
+
+Result 3 (source=the-tale-of-peter-rabbit.pdf, page=2, score=0.42638594):
+“Now, my dears,” said old Mrs. Rabbit one morning, “you may go into the fields or down the  lane, but don’t go into Mr. McGregor’s garden: your Father had an accident there; he was put in  a pie by Mrs. McGregor.” 
+
+Generating answer with Ollama...
+
+Answer:
+Peter is the rabbit who is the main character of the story. He is a mischievous young rabbit who has escaped from his mother's warnings to stay away from Mr. McGregor's garden, where he has gone in search of parsley.
+</code></pre>
+<h2 id="surrealdb"><a class="header" href="#surrealdb">SurrealDB</a></h2>
+<pre><code class="language-text">cargo run -p rag_surrealdb -- load data/the-tale-of-peter-rabbit.pdf
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.43s
+     Running `target/debug/rag_surrealdb load data/the-tale-of-peter-rabbit.pdf`
+Extracting text from data/the-tale-of-peter-rabbit.pdf...
+Loaded page 1...
+Loaded page 2...
+Loaded page 3...
+Loaded page 4...
+Loaded page 5...
+Loaded page 6...
+Loaded page 7...
+Loaded page 8...
+Loaded page 9...
+Loaded page 10...
+Loaded page 11...
+Loaded page 12...
+Loaded page 13...
+Loaded page 14...
+Loaded all page chunks into SurrealDB.
+Ask questions with: cargo run -p rag_sample -- ask "your question"
+
+cargo run -p rag_surrealdb -- ask "Who is Peter?"
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.62s
+     Running `target/debug/rag_surrealdb ask 'Who is Peter?'`
+Generating embedding for the question...
+Searching for relevant chunks...
+Top matches for: "Who is Peter?"
+
+Result 1 (source=the-tale-of-peter-rabbit.pdf, page=5):
+And then, feeling rather sick, he went to look for some parsley.  But round the end of a cucumber frame, whom should he meet but Mr. McGregor!
+
+Result 2 (source=the-tale-of-peter-rabbit.pdf, page=9):
+Mr. McGregor was quite sure that Peter was somewhere in the toolshed, perhaps hidden  underneath a flower-pot. He began to turn them over carefully, looking under each.  Presently Peter sneezed— “Kertyschoo!” Mr. McGregor was after him in no time,
+
+Result 3 (source=the-tale-of-peter-rabbit.pdf, page=2):
+“Now, my dears,” said old Mrs. Rabbit one morning, “you may go into the fields or down the  lane, but don’t go into Mr. McGregor’s garden: your Father had an accident there; he was put in  a pie by Mrs. McGregor.” 
+
+Generating answer with Ollama...
+
+Answer:
+Peter is the main character of the story, a rabbit, likely the son or child of old Mrs. Rabbit.
+</code></pre>
+<h2 id="reflections-and-key-considerations"><a class="header" href="#reflections-and-key-considerations">Reflections and Key Considerations</a></h2>
+<h3 id="1-vector-engine-scoring-normalization"><a class="header" href="#1-vector-engine-scoring-normalization">1. Vector Engine Scoring (Normalization)</a></h3>
+<p>One of the most significant “attention points” when comparing vector databases is how they report similarity:</p>
+<ul>
+<li><strong>Elasticsearch (0.71 – 0.75)</strong>: Uses a normalized score where 1.0 is a perfect match and 0.0 is no match. For Cosine similarity, it often applies <code>(1 + cosine) / 2</code>.</li>
+<li><strong>Qdrant (0.50 – 0.51)</strong>: These values are closer to raw cosine similarity (which ranges from -1 to 1) or a different internal normalization.</li>
+<li><strong>SurrealDB</strong>: Does not display scores by default in our current implementation, but ranks correctly.</li>
+</ul>
+<p><strong>Takeaway</strong>: You cannot compare absolute scores across different engines; only the relative ranking within a single engine matters.</p>
+<h3 id="2-data-state-and-idempotency"><a class="header" href="#2-data-state-and-idempotency">2. Data State and Idempotency</a></h3>
+<p>Previously, the results contained <strong>duplicates</strong> (e.g., Page 5 appearing twice in Qdrant). After deleting the databases and rerunning the scripts, the duplicates disappeared.</p>
+<ul>
+<li><strong>Cause</strong>: The current scripts use random UUIDs for each load. Without an “upsert” mechanism (checking if a page’s content already exists), running the load script multiple times pollutes the database.</li>
+<li><strong>Influence</strong>: Duplicates consume the limited “top-k” slots, preventing the LLM from seeing other relevant context pages.</li>
+</ul>
+<h3 id="3-consistency-of-embeddings"><a class="header" href="#3-consistency-of-embeddings">3. Consistency of Embeddings</a></h3>
+<p>Across all three runtimes, the top results were consistently <strong>Page 5</strong> and <strong>Page 9</strong>. This confirms that the <strong>embedding model (<code>llama3.1</code>)</strong> is stable and generates the same semantic vector regardless of which database stores it. The quality of your RAG system is primarily bounded by the quality of these embeddings.</p>
+<h3 id="4-llm-non-determinism"><a class="header" href="#4-llm-non-determinism">4. LLM Non-Determinism</a></h3>
+<p>Even with identical context, the final answers vary:</p>
+<ul>
+<li>One engine describes Peter as “mischievous”.</li>
+<li>Another emphasizes his relationship with “old Mrs. Rabbit”.</li>
+<li>A third focuses on his “trouble in the garden”.</li>
+</ul>
+<p>This variability is inherent to LLMs (unless <code>temperature</code> is set to 0). It highlights that the “Answer” is a synthesis, not a direct retrieval.</p>
+<h3 id="5-document-preprocessing"><a class="header" href="#5-document-preprocessing">5. Document Preprocessing</a></h3>
+<p>Small differences in how text is trimmed or chunked (e.g., handling of newlines or page headers) can shift the embedding vector slightly, which might change the score or even the ranking order in more complex datasets. Consistent extraction is key to reproducible RAG.</p>
 
                     </main>
 

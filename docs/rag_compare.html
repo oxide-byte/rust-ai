@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Models - Rust AI</title>
+        <title>RAG Compare - Rust AI</title>
 
 
         <!-- Custom HTML head -->
@@ -174,24 +174,173 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="rust-models"><a class="header" href="#rust-models">Rust Models</a></h1>
-<h2 id="strand-rust-coder-14b"><a class="header" href="#strand-rust-coder-14b">Strand-Rust-Coder-14B</a></h2>
+                        <h1 id="compare"><a class="header" href="#compare">Compare</a></h1>
+<h2 id="elastic-search"><a class="header" href="#elastic-search">Elastic Search</a></h2>
+<pre><code class="language-text">cargo run -p rag_elasticsearch -- load data/the-tale-of-peter-rabbit.pdf
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.55s
+     Running `target/debug/rag_elasticsearch load data/the-tale-of-peter-rabbit.pdf`
+Extracting text from data/the-tale-of-peter-rabbit.pdf...
+Creating index 'pdf_chunks' with dense_vector mapping...
+Processed page 1...
+Processed page 2...
+Processed page 3...
+Processed page 4...
+Processed page 5...
+Processed page 6...
+Processed page 7...
+Processed page 8...
+Processed page 9...
+Processed page 10...
+Processed page 11...
+Processed page 12...
+Processed page 13...
+Processed page 14...
+Loaded all page chunks into Elasticsearch.
+
+cargo run -p rag_elasticsearch -- ask "Who is Peter?"
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.55s
+     Running `target/debug/rag_elasticsearch ask 'Who is Peter?'`
+Generating embedding for the question...
+Searching for relevant chunks in Elasticsearch...
+Top matches for: "Who is Peter?"
+
+Result 1 (source=the-tale-of-peter-rabbit.pdf, page=5, score=0.7578453):
+And then, feeling rather sick, he went to look for some parsley.  But round the end of a cucumber frame, whom should he meet but Mr. McGregor!
+
+Result 2 (source=the-tale-of-peter-rabbit.pdf, page=9, score=0.7525861):
+Mr. McGregor was quite sure that Peter was somewhere in the toolshed, perhaps hidden  underneath a flower-pot. He began to turn them over carefully, looking under each.  Presently Peter sneezed— “Kertyschoo!” Mr. McGregor was after him in no time,
+
+Result 3 (source=the-tale-of-peter-rabbit.pdf, page=2, score=0.713193):
+“Now, my dears,” said old Mrs. Rabbit one morning, “you may go into the fields or down the  lane, but don’t go into Mr. McGregor’s garden: your Father had an accident there; he was put in  a pie by Mrs. McGregor.” 
+
+Generating answer with Ollama...
+
+Answer:
+According to the context, Peter refers to Peter Rabbit, a young rabbit who lives with his mother, old Mrs. Rabbit. He is the main character in the story and is known for getting into trouble by visiting Mr. McGregor's garden despite his mother's warnings.
+</code></pre>
+<h2 id="qdrant"><a class="header" href="#qdrant">QDRANT</a></h2>
+<pre><code class="language-text">cargo run -p rag_qdrant -- load data/the-tale-of-peter-rabbit.pdf
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.16s
+     Running `target/debug/rag_qdrant load data/the-tale-of-peter-rabbit.pdf`
+Extracting text from data/the-tale-of-peter-rabbit.pdf...
+Creating collection 'pdf_chunks'...
+Processed page 1...
+Processed page 2...
+Processed page 3...
+Processed page 4...
+Processed page 5...
+Processed page 6...
+Processed page 7...
+Processed page 8...
+Processed page 9...
+Processed page 10...
+Processed page 11...
+Processed page 12...
+Processed page 13...
+Processed page 14...
+Loaded all page chunks into Qdrant.
+Ask questions with: cargo run -p rag_sample -- ask "your question"
+
+cargo run -p rag_qdrant -- ask "Who is Peter?"
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.62s
+     Running `target/debug/rag_qdrant ask 'Who is Peter?'`
+Generating embedding for the question...
+Searching for relevant chunks in Qdrant...
+Top matches for: "Who is Peter?"
+
+Result 1 (source=the-tale-of-peter-rabbit.pdf, page=5, score=0.5156903):
+And then, feeling rather sick, he went to look for some parsley.  But round the end of a cucumber frame, whom should he meet but Mr. McGregor!
+
+Result 2 (source=the-tale-of-peter-rabbit.pdf, page=9, score=0.5051725):
+Mr. McGregor was quite sure that Peter was somewhere in the toolshed, perhaps hidden  underneath a flower-pot. He began to turn them over carefully, looking under each.  Presently Peter sneezed— “Kertyschoo!” Mr. McGregor was after him in no time,
+
+Result 3 (source=the-tale-of-peter-rabbit.pdf, page=2, score=0.42638594):
+“Now, my dears,” said old Mrs. Rabbit one morning, “you may go into the fields or down the  lane, but don’t go into Mr. McGregor’s garden: your Father had an accident there; he was put in  a pie by Mrs. McGregor.” 
+
+Generating answer with Ollama...
+
+Answer:
+Peter is the rabbit who is the main character of the story. He is a mischievous young rabbit who has escaped from his mother's warnings to stay away from Mr. McGregor's garden, where he has gone in search of parsley.
+</code></pre>
+<h2 id="surrealdb"><a class="header" href="#surrealdb">SurrealDB</a></h2>
+<pre><code class="language-text">cargo run -p rag_surrealdb -- load data/the-tale-of-peter-rabbit.pdf
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.43s
+     Running `target/debug/rag_surrealdb load data/the-tale-of-peter-rabbit.pdf`
+Extracting text from data/the-tale-of-peter-rabbit.pdf...
+Loaded page 1...
+Loaded page 2...
+Loaded page 3...
+Loaded page 4...
+Loaded page 5...
+Loaded page 6...
+Loaded page 7...
+Loaded page 8...
+Loaded page 9...
+Loaded page 10...
+Loaded page 11...
+Loaded page 12...
+Loaded page 13...
+Loaded page 14...
+Loaded all page chunks into SurrealDB.
+Ask questions with: cargo run -p rag_sample -- ask "your question"
+
+cargo run -p rag_surrealdb -- ask "Who is Peter?"
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.62s
+     Running `target/debug/rag_surrealdb ask 'Who is Peter?'`
+Generating embedding for the question...
+Searching for relevant chunks...
+Top matches for: "Who is Peter?"
+
+Result 1 (source=the-tale-of-peter-rabbit.pdf, page=5):
+And then, feeling rather sick, he went to look for some parsley.  But round the end of a cucumber frame, whom should he meet but Mr. McGregor!
+
+Result 2 (source=the-tale-of-peter-rabbit.pdf, page=9):
+Mr. McGregor was quite sure that Peter was somewhere in the toolshed, perhaps hidden  underneath a flower-pot. He began to turn them over carefully, looking under each.  Presently Peter sneezed— “Kertyschoo!” Mr. McGregor was after him in no time,
+
+Result 3 (source=the-tale-of-peter-rabbit.pdf, page=2):
+“Now, my dears,” said old Mrs. Rabbit one morning, “you may go into the fields or down the  lane, but don’t go into Mr. McGregor’s garden: your Father had an accident there; he was put in  a pie by Mrs. McGregor.” 
+
+Generating answer with Ollama...
+
+Answer:
+Peter is the main character of the story, a rabbit, likely the son or child of old Mrs. Rabbit.
+</code></pre>
+<h2 id="reflections-and-key-considerations"><a class="header" href="#reflections-and-key-considerations">Reflections and Key Considerations</a></h2>
+<h3 id="1-vector-engine-scoring-normalization"><a class="header" href="#1-vector-engine-scoring-normalization">1. Vector Engine Scoring (Normalization)</a></h3>
+<p>One of the most significant “attention points” when comparing vector databases is how they report similarity:</p>
 <ul>
-<li>URL: https://huggingface.co/Fortytwo-Network/Strand-Rust-Coder-14B-v1-GGUF</li>
-<li>Model: hf.co/Fortytwo-Network/Strand-Rust-Coder-14B-v1-GGUF:latest</li>
+<li><strong>Elasticsearch (0.71 – 0.75)</strong>: Uses a normalized score where 1.0 is a perfect match and 0.0 is no match. For Cosine similarity, it often applies <code>(1 + cosine) / 2</code>.</li>
+<li><strong>Qdrant (0.50 – 0.51)</strong>: These values are closer to raw cosine similarity (which ranges from -1 to 1) or a different internal normalization.</li>
+<li><strong>SurrealDB</strong>: Does not display scores by default in our current implementation, but ranks correctly.</li>
 </ul>
+<p><strong>Takeaway</strong>: You cannot compare absolute scores across different engines; only the relative ranking within a single engine matters.</p>
+<h3 id="2-data-state-and-idempotency"><a class="header" href="#2-data-state-and-idempotency">2. Data State and Idempotency</a></h3>
+<p>Previously, the results contained <strong>duplicates</strong> (e.g., Page 5 appearing twice in Qdrant). After deleting the databases and rerunning the scripts, the duplicates disappeared.</p>
+<ul>
+<li><strong>Cause</strong>: The current scripts use random UUIDs for each load. Without an “upsert” mechanism (checking if a page’s content already exists), running the load script multiple times pollutes the database.</li>
+<li><strong>Influence</strong>: Duplicates consume the limited “top-k” slots, preventing the LLM from seeing other relevant context pages.</li>
+</ul>
+<h3 id="3-consistency-of-embeddings"><a class="header" href="#3-consistency-of-embeddings">3. Consistency of Embeddings</a></h3>
+<p>Across all three runtimes, the top results were consistently <strong>Page 5</strong> and <strong>Page 9</strong>. This confirms that the <strong>embedding model (<code>llama3.1</code>)</strong> is stable and generates the same semantic vector regardless of which database stores it. The quality of your RAG system is primarily bounded by the quality of these embeddings.</p>
+<h3 id="4-llm-non-determinism"><a class="header" href="#4-llm-non-determinism">4. LLM Non-Determinism</a></h3>
+<p>Even with identical context, the final answers vary:</p>
+<ul>
+<li>One engine describes Peter as “mischievous”.</li>
+<li>Another emphasizes his relationship with “old Mrs. Rabbit”.</li>
+<li>A third focuses on his “trouble in the garden”.</li>
+</ul>
+<p>This variability is inherent to LLMs (unless <code>temperature</code> is set to 0). It highlights that the “Answer” is a synthesis, not a direct retrieval.</p>
+<h3 id="5-document-preprocessing"><a class="header" href="#5-document-preprocessing">5. Document Preprocessing</a></h3>
+<p>Small differences in how text is trimmed or chunked (e.g., handling of newlines or page headers) can shift the embedding vector slightly, which might change the score or even the ranking order in more complex datasets. Consistent extraction is key to reproducible RAG.</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="mdbook.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="rag_elasticsearch.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="ollama_sample.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
-                            </a>
 
                         <div style="clear: both"></div>
                     </nav>
@@ -199,13 +348,10 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="mdbook.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="rag_elasticsearch.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="ollama_sample.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
-                    </a>
             </nav>
 
         </div>

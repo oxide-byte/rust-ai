@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Models - Rust AI</title>
+        <title>RAG with SurrealDB - Rust AI</title>
 
 
         <!-- Custom HTML head -->
@@ -174,22 +174,134 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="rust-models"><a class="header" href="#rust-models">Rust Models</a></h1>
-<h2 id="strand-rust-coder-14b"><a class="header" href="#strand-rust-coder-14b">Strand-Rust-Coder-14B</a></h2>
+                        <h1 id="rag-sample-introduction-to-pdf-retrieval-with-surrealdb"><a class="header" href="#rag-sample-introduction-to-pdf-retrieval-with-surrealdb">RAG Sample: Introduction to PDF Retrieval with SurrealDB</a></h1>
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>This sample demonstrates a full Rust-based Retrieval-Augmented Generation (RAG) workflow that:</p>
 <ul>
-<li>URL: https://huggingface.co/Fortytwo-Network/Strand-Rust-Coder-14B-v1-GGUF</li>
-<li>Model: hf.co/Fortytwo-Network/Strand-Rust-Coder-14B-v1-GGUF:latest</li>
+<li>loads PDF text and generates vector embeddings for each page using Ollama,</li>
+<li>stores the extracted page content and embeddings in SurrealDB,</li>
+<li>performs semantic vector search to retrieve relevant chunks for a question,</li>
+<li>synthesizes a final answer using an LLM.</li>
+</ul>
+<p>The SurrealDB server and Ollama service should be running locally. The Rust workspace includes the <code>rag_surrealdb</code> module for loading and querying data.</p>
+<h2 id="what-this-project-does"><a class="header" href="#what-this-project-does">What This Project Does</a></h2>
+<ul>
+<li>Starts a local SurrealDB service with Docker Compose</li>
+<li>Uses Ollama (llama3.1) to generate embeddings for document chunks</li>
+<li>Inserts PDF page chunks and their embeddings into SurrealDB</li>
+<li>Performs semantic search using SurrealDB’s vector search (HNSW index)</li>
+<li>Generates a natural language answer using an LLM via Ollama</li>
+</ul>
+<h2 id="plan"><a class="header" href="#plan">Plan</a></h2>
+<ol>
+<li>Add a new Rust workspace member named <code>rag_surrealdb</code>.</li>
+<li>Add <code>pdf-extract</code> to the workspace dependencies.</li>
+<li>Create a Docker Compose configuration for SurrealDB.</li>
+<li>Implement <code>rag_surrealdb/src/main.rs</code> with two modes:
+<ul>
+<li><code>load &lt;path-to-pdf&gt;</code>: read the PDF and insert page chunks into SurrealDB</li>
+<li><code>ask "&lt;question&gt;"</code>: retrieve relevant PDF chunks from SurrealDB</li>
+</ul>
+</li>
+<li>Update documentation with the instructions and sample commands.</li>
+</ol>
+<h2 id="how-it-works"><a class="header" href="#how-it-works">How It Works</a></h2>
+<h3 id="loading-process"><a class="header" href="#loading-process">Loading Process</a></h3>
+<p>When you run the <code>load</code> command, the application performs the following steps:</p>
+<ol>
+<li><strong>Text Extraction</strong>: Uses <code>pdf-extract</code> to read the PDF file and split it into individual pages.</li>
+<li><strong>Indexing</strong>: Ensures a vector index (HNSW) is defined in SurrealDB for the <code>embedding</code> field.</li>
+<li><strong>Embedding Generation</strong>: For each page, it sends the text to Ollama (<code>llama3.1</code>) to generate a 4096-dimensional vector embedding.</li>
+<li><strong>Storage</strong>: Stores the page text, metadata (source file, page number), and the embedding as a record in the <code>chunk</code> table in SurrealDB.</li>
+</ol>
+<pre class="mermaid">sequenceDiagram
+    participant CLI as rag_surrealdb load
+    participant PDF as PDF File
+    participant O as Ollama (llama3.1)
+    participant S as SurrealDB
+
+    CLI-&gt;&gt;PDF: Extract text by pages
+    CLI-&gt;&gt;S: DEFINE INDEX (HNSW)
+    loop For each page
+        CLI-&gt;&gt;O: Get embedding for page text
+        O--&gt;&gt;CLI: 4096-D Vector
+        CLI-&gt;&gt;S: CREATE chunk (text + embedding)
+    end
+</pre>
+
+<h3 id="querying-process-rag"><a class="header" href="#querying-process-rag">Querying Process (RAG)</a></h3>
+<p>When you run the <code>ask</code> command, the application executes the RAG workflow:</p>
+<ol>
+<li><strong>Question Embedding</strong>: Generates a vector embedding for your question using Ollama.</li>
+<li><strong>Semantic Search</strong>: Performs a K-Nearest Neighbors (KNN) search in SurrealDB to find the top 3 most relevant text chunks based on vector distance.</li>
+<li><strong>Context Construction</strong>: Combines the retrieved text chunks into a single context block.</li>
+<li><strong>Answer Synthesis</strong>: Sends the context and your question to Ollama. The LLM uses the provided context to generate a factual answer.</li>
+</ol>
+<pre class="mermaid">sequenceDiagram
+    participant CLI as rag_surrealdb ask
+    participant O as Ollama (llama3.1)
+    participant S as SurrealDB
+
+    CLI-&gt;&gt;O: Get embedding for question
+    O--&gt;&gt;CLI: Question Vector
+    CLI-&gt;&gt;S: Vector Search (KNN)
+    S--&gt;&gt;CLI: Top 3 relevant chunks
+    CLI-&gt;&gt;O: Generate answer (Context + Question)
+    O--&gt;&gt;CLI: Synthesized Answer
+    CLI-&gt;&gt;User: Display Answer
+</pre>
+
+<h2 id="setup"><a class="header" href="#setup">Setup</a></h2>
+<h3 id="start-services"><a class="header" href="#start-services">Start Services</a></h3>
+<ol>
+<li>Start SurrealDB from the repository root:</li>
+</ol>
+<pre><code class="language-bash">docker compose up -d surrealdb
+</code></pre>
+<ol start="2">
+<li>Ensure Ollama is running and has the <code>llama3.1</code> model:</li>
+</ol>
+<pre><code class="language-bash">ollama run llama3.1
+</code></pre>
+<h3 id="load-a-pdf"><a class="header" href="#load-a-pdf">Load a PDF</a></h3>
+<pre><code class="language-bash">cargo run -p rag_surrealdb -- load path/to/document.pdf
+</code></pre>
+<h3 id="sample-pdf"><a class="header" href="#sample-pdf">Sample PDF</a></h3>
+<p>Use the included sample file:</p>
+<pre><code class="language-bash">cargo run -p rag_surrealdb -- load data/the-tale-of-peter-rabbit.pdf
+</code></pre>
+<h3 id="ask-a-question"><a class="header" href="#ask-a-question">Ask a Question</a></h3>
+<pre><code class="language-bash">cargo run -p rag_surrealdb -- ask "Who is Peter?"
+</code></pre>
+<h2 id="notes"><a class="header" href="#notes">Notes</a></h2>
+<ul>
+<li>The sample uses vector embeddings (4096-D) for semantic retrieval.</li>
+<li>It leverages SurrealDB’s HNSW index for efficient similarity search.</li>
+<li>The final answer is generated by an LLM (llama3.1 via Ollama) using the retrieved context.</li>
+<li>The database namespace is <code>rag</code> and the database name is <code>sample</code>.</li>
+</ul>
+<h2 id="file-structure"><a class="header" href="#file-structure">File Structure</a></h2>
+<pre><code>rag_surrealdb/
+├── Cargo.toml
+└── src/
+    └── main.rs
+</code></pre>
+<h2 id="next-steps"><a class="header" href="#next-steps">Next Steps</a></h2>
+<ul>
+<li>Implement chunking strategies (e.g., fixed-size with overlap) instead of page-level chunks.</li>
+<li>Add support for multiple PDF documents and filtered search.</li>
+<li>Explore hybrid search (combining full-text and vector search) for better accuracy.</li>
 </ul>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="mdbook.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="rag_qdrant.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="ollama_sample.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="rag_elasticsearch.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -199,11 +311,11 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="mdbook.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="rag_qdrant.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="ollama_sample.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="rag_elasticsearch.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
