@@ -152,5 +152,5 @@ The question doesn't ask about Peter's characteristics or actions, but rather wh
 
 ## Next Steps
 
+- [Relational & Hybrid Search](rag_surrealdb_with_db.md): Leverage SurrealDB's relational and full-text search capabilities.
 - **Recursive Character Splitting**: Improve chunking by splitting at natural boundaries like paragraphs and sentences first.
-- **Metadata Enhancement**: Store the original page number for each chunk to allow referencing back to the source.

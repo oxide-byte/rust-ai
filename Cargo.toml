@@ -2,6 +2,7 @@
 members = [
     "ollama_sample",
     "rag_surrealdb",
+    "rag_surrealdb_with_db",
     "rag_qdrant",
     "rag_elasticsearch",
     "rag_surrealdb_extends"
