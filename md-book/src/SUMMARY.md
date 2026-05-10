@@ -5,5 +5,6 @@
 - [Ollama Sample](ollama_sample.md)
 - [RAG with QDRANT](rag_qdrant.md)
 - [RAG with SurrealDB](rag_surrealdb.md)
+    - [Advanced Chunking](rag_surrealdb_extends.md)
 - [RAG with Elasticsearch](rag_elasticsearch.md)
 - [RAG Compare](rag_compare.md)

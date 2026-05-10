@@ -36,10 +36,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-5b9af175.js";
+            window.path_to_searchindex_js = "searchindex-45aefdd2.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-f27b7f52.js"></script>
+        <script src="toc-7b23f7e2.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -546,8 +546,149 @@ Open <a href="http://localhost:6333/dashboard">http://localhost:6333/dashboard</
 <li>Explore hybrid search (combining full-text and vector search) for better accuracy.</li>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="rag-sample-introduction-to-pdf-retrieval-with-elasticsearch"><a class="header" href="#rag-sample-introduction-to-pdf-retrieval-with-elasticsearch">RAG Sample: Introduction to PDF Retrieval with Elasticsearch</a></h1>
+<h1 id="rag-sample-surrealdb-with-advanced-chunking"><a class="header" href="#rag-sample-surrealdb-with-advanced-chunking">RAG Sample: SurrealDB with Advanced Chunking</a></h1>
 <h2 id="overview-2"><a class="header" href="#overview-2">Overview</a></h2>
+<p>This module, <code>rag_surrealdb_extends</code>, builds upon the basic SurrealDB RAG sample by implementing <strong>Advanced Chunking Strategies</strong>.</p>
+<p>While the basic version splits documents by page, this version supports:</p>
+<ol>
+<li><strong>Fixed-Size Chunking with Overlap</strong></li>
+<li><strong>Paragraph Splitting</strong></li>
+</ol>
+<h2 id="key-features"><a class="header" href="#key-features">Key Features</a></h2>
+<ul>
+<li><strong>Global Text Extraction</strong>: Combines all pages of a PDF into a single text stream.</li>
+<li><strong>Fixed-Size Chunks</strong>: Uses a window of 1000 characters with a 200-character overlap.</li>
+<li><strong>Paragraph Chunks</strong>: Splits text by double newlines (<code>\n\n</code>), preserving natural structural boundaries.</li>
+<li><strong>Improved Context</strong>: Different strategies allow for balancing between precise retrieval and context preservation.</li>
+</ul>
+<h2 id="how-it-works-2"><a class="header" href="#how-it-works-2">How It Works</a></h2>
+<h3 id="the-chunking-algorithms"><a class="header" href="#the-chunking-algorithms">The Chunking Algorithms</a></h3>
+<h4 id="1-fixed-size-sliding-window"><a class="header" href="#1-fixed-size-sliding-window">1. Fixed-Size Sliding Window</a></h4>
+<p>The application implements a sliding window approach:</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>fn chunk_text_fixed(text: &amp;str, size: usize, overlap: usize) -&gt; Vec&lt;String&gt; {
+    // ... logic to create chunks of 'size' with 'overlap' ...
+}
+<span class="boring">}</span></code></pre>
+<h4 id="2-paragraph-split"><a class="header" href="#2-paragraph-split">2. Paragraph Split</a></h4>
+<p>Splits the text into segments based on double newlines:</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>fn chunk_text_paragraphs(text: &amp;str) -&gt; Vec&lt;String&gt; {
+    text.split("\n\n")
+        // ... trim and filter ...
+}
+<span class="boring">}</span></code></pre>
+<h3 id="comparison-page-level-vs-advanced-strategies"><a class="header" href="#comparison-page-level-vs-advanced-strategies">Comparison: Page-level vs. Advanced Strategies</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Feature</th><th>Page-Level (Basic)</th><th>Fixed-Size (Extended)</th><th>Paragraph (Extended)</th></tr>
+</thead>
+<tbody>
+<tr><td>Granularity</td><td>Coarse (Entire Page)</td><td>Fine (1000 chars)</td><td>Variable (Paragraph)</td></tr>
+<tr><td>Context Preservation</td><td>Poor (breaks at page end)</td><td>Good (Overlap)</td><td>Excellent (Natural)</td></tr>
+<tr><td>DB Storage</td><td>One record per page</td><td>Multiple records</td><td>Multiple records</td></tr>
+<tr><td>Best For</td><td>Simple docs</td><td>Dense, flat text</td><td>Structured narratives</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="setup-2"><a class="header" href="#setup-2">Setup</a></h2>
+<h3 id="1-start-surrealdb"><a class="header" href="#1-start-surrealdb">1. Start SurrealDB</a></h3>
+<p>Ensure SurrealDB is running:</p>
+<pre><code class="language-bash">docker compose up -d surrealdb
+</code></pre>
+<h3 id="2-load-a-pdf-fixed-size-strategy"><a class="header" href="#2-load-a-pdf-fixed-size-strategy">2. Load a PDF (Fixed-Size Strategy)</a></h3>
+<pre><code class="language-bash">cargo run -p rag_surrealdb_extends -- load data/the-tale-of-peter-rabbit.pdf fixed
+</code></pre>
+<h3 id="3-load-a-pdf-paragraph-strategy"><a class="header" href="#3-load-a-pdf-paragraph-strategy">3. Load a PDF (Paragraph Strategy)</a></h3>
+<pre><code class="language-bash">cargo run -p rag_surrealdb_extends -- load data/the-tale-of-peter-rabbit.pdf paragraph
+</code></pre>
+<p><em>Note: This will use the <code>extended</code> database in the <code>rag</code> namespace.</em></p>
+<h3 id="4-ask-a-question"><a class="header" href="#4-ask-a-question">4. Ask a Question</a></h3>
+<pre><code class="language-bash">cargo run -p rag_surrealdb_extends -- ask "Who is Peter?"
+</code></pre>
+<h2 id="execution"><a class="header" href="#execution">Execution</a></h2>
+<h3 id="fixed"><a class="header" href="#fixed">Fixed</a></h3>
+<pre><code class="language-text">cargo run -p rag_surrealdb_extends -- load data/the-tale-of-peter-rabbit.pdf fixed
+   Compiling rag_surrealdb_extends v0.1.0 (/Users/qdart/projects/rust-ai/rag_surrealdb_extends)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 10.25s
+     Running `target/debug/rag_surrealdb_extends load data/the-tale-of-peter-rabbit.pdf fixed`
+Extracting text from data/the-tale-of-peter-rabbit.pdf...
+Using Fixed-size chunking strategy (size=1000, overlap=200)...
+Split PDF into 7 chunks
+Loaded chunk 5/7...
+Loaded chunk 7/7...
+Loaded all chunks into SurrealDB (Extended).
+
+cargo run -p rag_surrealdb_extends -- ask "Who is Peter?"
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.77s
+     Running `target/debug/rag_surrealdb_extends ask 'Who is Peter?'`
+Generating embedding for the question...
+Searching for relevant chunks...
+Top matches for: "Who is Peter?"
+
+Result 1 (source=the-tale-of-peter-rabbit.pdf, chunk=6):
+e wondered what he had done with his clothes. It  was the second little jacket and pair of shoes that Peter had lost in a fortnight!  I am sorry to say that Peter was not very well during the evening.  His mother put him to bed, and made some camomile tea; and she gave a dose of it to Peter!  “One t...
+
+Result 2 (source=the-tale-of-peter-rabbit.pdf, chunk=5):
+a wheelbarrow, and peeped over. The first  thing he saw was Mr. McGregor hoeing onions. His back was turned towards Peter, and beyond  him was the gate!    Peter got down very quietly off the wheelbarrow, and started running as fast as he could go,  along a straight walk behind some black-currant bu...
+
+Result 3 (source=the-tale-of-peter-rabbit.pdf, chunk=0):
+The Tale of Peter Rabbit Beatrix Potter  Once upon a time there were four little Rabbits, and their names were— Flopsy, Mopsy, Cotton- tail, and Peter.  They lived with their Mother in a sand-bank, underneath the root of a very big fir tree.    “Now, my dears,” said old Mrs. Rabbit one morning, “you...
+
+Generating answer with Ollama...
+
+Answer:
+Peter is one of the four little rabbits who live with their mother in a sand-bank under the root of a big fir tree. He is described as "very naughty" and has a tendency to get into trouble by disobeying his mother's instructions not to go into Mr. McGregor's garden.
+</code></pre>
+<h3 id="paragraph"><a class="header" href="#paragraph">Paragraph</a></h3>
+<pre><code class="language-text">cargo run -p rag_surrealdb_extends -- load data/the-tale-of-peter-rabbit.pdf paragraph
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.45s
+     Running `target/debug/rag_surrealdb_extends load data/the-tale-of-peter-rabbit.pdf paragraph`
+Extracting text from data/the-tale-of-peter-rabbit.pdf...
+Using Paragraph splitting strategy...
+Split PDF into 38 chunks
+Loaded chunk 5/38...
+Loaded chunk 10/38...
+Loaded chunk 15/38...
+Loaded chunk 20/38...
+Loaded chunk 25/38...
+Loaded chunk 30/38...
+Loaded chunk 35/38...
+Loaded chunk 38/38...
+Loaded all chunks into SurrealDB (Extended).
+
+cargo run -p rag_surrealdb_extends -- ask "Who is Peter?"
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.75s
+     Running `target/debug/rag_surrealdb_extends ask 'Who is Peter?'`
+Generating embedding for the question...
+Searching for relevant chunks...
+Top matches for: "Who is Peter?"
+
+Result 1 (source=the-tale-of-peter-rabbit.pdf, chunk=34):
+“One table-spoonful to be taken at bed-time.”...
+
+Result 2 (source=the-tale-of-peter-rabbit.pdf, chunk=4):
+“Now run along, and don’t get into mischief. I am going out.”...
+
+Result 3 (source=the-tale-of-peter-rabbit.pdf, chunk=9):
+And then, feeling rather sick, he went to look for some parsley....
+
+Generating answer with Ollama...
+
+Answer:
+The question doesn't ask about Peter's characteristics or actions, but rather who Peter is. Based on the context, it appears that Peter is the subject of "the-tale-of-peter-rabbit.pdf", which suggests that Peter is likely the main character in The Tale of Peter Rabbit.
+</code></pre>
+<h2 id="next-steps-2"><a class="header" href="#next-steps-2">Next Steps</a></h2>
+<ul>
+<li><strong>Recursive Character Splitting</strong>: Improve chunking by splitting at natural boundaries like paragraphs and sentences first.</li>
+<li><strong>Metadata Enhancement</strong>: Store the original page number for each chunk to allow referencing back to the source.</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="rag-sample-introduction-to-pdf-retrieval-with-elasticsearch"><a class="header" href="#rag-sample-introduction-to-pdf-retrieval-with-elasticsearch">RAG Sample: Introduction to PDF Retrieval with Elasticsearch</a></h1>
+<h2 id="overview-3"><a class="header" href="#overview-3">Overview</a></h2>
 <p>This sample demonstrates a full Rust-based Retrieval-Augmented Generation (RAG) workflow that:</p>
 <ul>
 <li>loads PDF text and generates vector embeddings for each page using Ollama,</li>
@@ -577,7 +718,7 @@ Open <a href="http://localhost:6333/dashboard">http://localhost:6333/dashboard</
 </li>
 <li>Update documentation with the instructions and sample commands.</li>
 </ol>
-<h2 id="how-it-works-2"><a class="header" href="#how-it-works-2">How It Works</a></h2>
+<h2 id="how-it-works-3"><a class="header" href="#how-it-works-3">How It Works</a></h2>
 <h3 id="loading-process-2"><a class="header" href="#loading-process-2">Loading Process</a></h3>
 <p>When you run the <code>load</code> command, the application performs the following steps:</p>
 <ol>
@@ -623,7 +764,7 @@ Open <a href="http://localhost:6333/dashboard">http://localhost:6333/dashboard</
     CLI-&gt;&gt;User: Display Answer
 </pre>
 
-<h2 id="setup-2"><a class="header" href="#setup-2">Setup</a></h2>
+<h2 id="setup-3"><a class="header" href="#setup-3">Setup</a></h2>
 <h3 id="start-services-2"><a class="header" href="#start-services-2">Start Services</a></h3>
 <ol>
 <li>Start Elasticsearch from the repository root:</li>
