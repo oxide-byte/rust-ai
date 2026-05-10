@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>MD Book - Rust AI</title>
+        <title>RAG with SurrealDB - Relational &amp; Hybrid Search - Rust AI</title>
 
 
         <!-- Custom HTML head -->
@@ -174,47 +174,151 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="mdbook-instructions"><a class="header" href="#mdbook-instructions">mdBook Instructions</a></h1>
-<p>This project uses <strong>mdBook</strong> to generate documentation.</p>
-<h2 id="prerequisites"><a class="header" href="#prerequisites">Prerequisites</a></h2>
-<p>To build the documentation, you need to install <code>mdbook</code> and the <code>mdbook-mermaid</code> preprocessor for diagrams.</p>
-<h3 id="1-install-mdbook"><a class="header" href="#1-install-mdbook">1. Install mdBook</a></h3>
-<p>You can install <code>mdbook</code> using Cargo (Rust’s package manager):</p>
-<pre><code class="language-bash">cargo install mdbook
-</code></pre>
-<p>Alternatively, you can download binaries from the <a href="https://github.com/rust-lang/mdBook/releases">mdBook releases page</a>.</p>
-<h3 id="2-install-mdbook-mermaid"><a class="header" href="#2-install-mdbook-mermaid">2. Install mdbook-mermaid</a></h3>
-<p>This project uses Mermaid for diagrams. Install the preprocessor:</p>
-<pre><code class="language-bash">cargo install mdbook-mermaid
-</code></pre>
-<h2 id="building-the-book"><a class="header" href="#building-the-book">Building the Book</a></h2>
-<p>The book is configured to build its output into the <code>/docs</code> directory at the project root.</p>
-<h3 id="build-command"><a class="header" href="#build-command">Build Command</a></h3>
-<p>To generate the HTML version of the book, run the following command from the <code>md-book</code> directory:</p>
-<pre><code class="language-bash">mdbook build
-</code></pre>
-<p>The generated files will be placed in <code>../docs</code>.</p>
-<h3 id="live-development"><a class="header" href="#live-development">Live Development</a></h3>
-<p>To preview changes as you edit, you can use the <code>serve</code> command:</p>
-<pre><code class="language-bash">mdbook serve --open
-</code></pre>
-<p>This will start a local web server and open the book in your default browser. It automatically reloads when you save changes to the markdown files.</p>
-<h2 id="project-structure"><a class="header" href="#project-structure">Project Structure</a></h2>
+                        <h1 id="rag-sample-surrealdb-with-relational--hybrid-search"><a class="header" href="#rag-sample-surrealdb-with-relational--hybrid-search">RAG Sample: SurrealDB with Relational &amp; Hybrid Search</a></h1>
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>This module, <code>rag_surrealdb_with_db</code>, takes our SurrealDB integration to the next level by utilizing the database’s <strong>Relational (Graph)</strong> and <strong>Full-Text Search (FTS)</strong> capabilities.</p>
+<p>Instead of just storing chunks as flat records, we now:</p>
+<ol>
+<li>Track <strong>Documents</strong> as first-class entities.</li>
+<li>Create <strong>Relationships</strong> (<code>RELATE</code>) between documents and their chunks.</li>
+<li>Use <strong>Hybrid Search</strong> (Vector + Full-Text) to improve retrieval accuracy.</li>
+</ol>
+<h2 id="key-features"><a class="header" href="#key-features">Key Features</a></h2>
 <ul>
-<li><code>md-book/book.toml</code>: Configuration file for the book.</li>
-<li><code>md-book/src/</code>: Contains the markdown source files.</li>
-<li><code>md-book/src/SUMMARY.md</code>: The table of contents for the book.</li>
-<li><code>docs/</code>: The generated HTML documentation (output directory).</li>
+<li><strong>Relational Data Model</strong>: Uses <code>SCHEMAFULL</code> tables and graph relations to link chunks to their parent document.</li>
+<li><strong>Full-Text Search Indexing</strong>: Implements <code>FULLTEXT ANALYZER</code> for keyword-based retrieval.</li>
+<li><strong>Hybrid Retrieval</strong>: Combines results from both K-Nearest Neighbor (KNN) vector search and Full-Text Search.</li>
+<li><strong>Context Labeling</strong>: The AI model is informed whether a piece of context was found via vector similarity or keyword match.</li>
 </ul>
+<h2 id="how-it-works"><a class="header" href="#how-it-works">How It Works</a></h2>
+<h3 id="1-relational-schema--indexing"><a class="header" href="#1-relational-schema--indexing">1. Relational Schema &amp; Indexing</a></h3>
+<p>We define a formal schema for documents and indexes to support relational data and hybrid search. We use a <code>SCHEMAFULL</code> approach for documents to ensure data integrity, while <code>chunk</code> remains flexible:</p>
+<pre><code class="language-sql">-- Schema for documents
+DEFINE TABLE document SCHEMAFULL;
+DEFINE FIELD name ON document TYPE string;
+DEFINE FIELD created_at ON document TYPE datetime DEFAULT time::now();
+
+-- Schema for chunks (records will be related to documents)
+DEFINE TABLE chunk SCHEMALESS;
+
+-- Define an analyzer for Full-Text Search
+DEFINE ANALYZER ascii TOKENIZERS blank FILTERS ascii, lowercase;
+
+-- Full-Text index on chunk text
+DEFINE INDEX chunk_text ON chunk FIELDS text FULLTEXT ANALYZER ascii BM25 HIGHLIGHTS;
+
+-- Vector index on chunk embedding
+DEFINE INDEX chunk_embedding ON chunk FIELDS embedding HNSW DIMENSION 4096 DISTANCE COSINE;
+
+-- Define the relationship (graph)
+-- RELATE document:id-&gt;contains-&gt;chunk:id;
+</code></pre>
+<h3 id="2-hybrid-search-query"><a class="header" href="#2-hybrid-search-query">2. Hybrid Search Query</a></h3>
+<p>The <code>ask</code> command executes two types of searches in a single request to leverage both semantic and keyword matching:</p>
+<pre><code class="language-sql">-- Full-Text Search (Exact keyword matches)
+SELECT *, search::score(1) AS score FROM chunk WHERE text @1@ 'question' ORDER BY score DESC;
+
+-- Vector Search (Semantic similarity)
+SELECT *, vector::distance::knn() AS distance FROM chunk WHERE embedding &lt;|3,40|&gt; [vector] ORDER BY distance ASC;
+</code></pre>
+<h2 id="setup"><a class="header" href="#setup">Setup</a></h2>
+<h3 id="1-start-surrealdb"><a class="header" href="#1-start-surrealdb">1. Start SurrealDB</a></h3>
+<p>Ensure SurrealDB is running:</p>
+<pre><code class="language-bash">docker compose up -d surrealdb
+</code></pre>
+<h3 id="2-initialize-database-with-sample-data"><a class="header" href="#2-initialize-database-with-sample-data">2. Initialize Database with Sample Data</a></h3>
+<p>You can load a sample description of Peter to test the search immediately:</p>
+<pre><code class="language-bash">cargo run -p rag_surrealdb_with_db -- init_db
+</code></pre>
+<h3 id="3-load-a-pdf"><a class="header" href="#3-load-a-pdf">3. Load a PDF</a></h3>
+<p>The <code>load</code> command now creates a document record and relates all chunks to it:</p>
+<pre><code class="language-bash">cargo run -p rag_surrealdb_with_db -- load data/the-tale-of-peter-rabbit.pdf
+</code></pre>
+<h3 id="4-ask-a-question"><a class="header" href="#4-ask-a-question">4. Ask a Question</a></h3>
+<p>The <code>ask</code> command will show you matches from both search methods:</p>
+<pre><code class="language-bash">cargo run -p rag_surrealdb_with_db -- ask "Who is Peter?"
+</code></pre>
+<h2 id="execution"><a class="header" href="#execution">Execution</a></h2>
+<pre><code class="language-text">cargo run -p rag_surrealdb_with_db -- init_db
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.25s
+     Running `target/debug/rag_surrealdb_with_db init_db`
+Generating embedding for sample text...
+Loaded sample data for Peter the rabbit into SurrealDB.
+qdart@MacBookPro rust-ai % cargo run -p rag_surrealdb_with_db -- load data/the-tale-of-peter-rabbit.pdf
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.23s
+     Running `target/debug/rag_surrealdb_with_db load data/the-tale-of-peter-rabbit.pdf`
+Extracting text from data/the-tale-of-peter-rabbit.pdf...
+Loaded page 1...
+Loaded page 2...
+Loaded page 3...
+Loaded page 4...
+Loaded page 5...
+Loaded page 6...
+Loaded page 7...
+Loaded page 8...
+Loaded page 9...
+Loaded page 10...
+Loaded page 11...
+Loaded page 12...
+Loaded page 13...
+Loaded page 14...
+Loaded all page chunks into SurrealDB.
+Ask questions with: cargo run -p rag_surrealdb_with_db -- ask "your question"
+
+cargo run -p rag_surrealdb_with_db -- ask "Who is Peter?"
+
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.23s
+     Running `target/debug/rag_surrealdb_with_db ask 'Who is Peter?'`
+Searching for matches using full-text search...
+Generating embedding for the question...
+
+--- Full-Text Search Matches ---
+
+--- Vector Search Matches ---
+Vector Match 1: Peter is a small, adventurous rabbit who wears a blue jacket and lives in a sand-bank under a fir tr (source: manual_entry)
+Vector Match 2: And then, feeling rather sick, he went to look for some parsley.
+
+But round the end of a cucumber fr (source: the-tale-of-peter-rabbit.pdf)
+Vector Match 3: Mr. McGregor was quite sure that Peter was somewhere in the toolshed, perhaps hidden 
+underneath a f (source: the-tale-of-peter-rabbit.pdf)
+
+Generating answer with Ollama...
+
+Answer:
+Peter is a rabbit.
+cargo run -p rag_surrealdb_with_db -- ask "Describe Peter?"
+
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.24s
+     Running `target/debug/rag_surrealdb_with_db ask 'Describe Peter?'`
+Searching for matches using full-text search...
+Generating embedding for the question...
+
+--- Full-Text Search Matches ---
+
+--- Vector Search Matches ---
+Vector Match 1: Peter is a small, adventurous rabbit who wears a blue jacket and lives in a sand-bank under a fir tr (source: manual_entry)
+Vector Match 2: And then, feeling rather sick, he went to look for some parsley.
+
+But round the end of a cucumber fr (source: the-tale-of-peter-rabbit.pdf)
+Vector Match 3: Mr. McGregor was quite sure that Peter was somewhere in the toolshed, perhaps hidden 
+underneath a f (source: the-tale-of-peter-rabbit.pdf)
+
+Generating answer with Ollama...
+
+Answer:
+According to the context, Peter is described as a "small, adventurous rabbit" who wears a blue jacket and lives with his family in a sand-bank under a fir tree.
+</code></pre>
+<h2 id="why-hybrid-search"><a class="header" href="#why-hybrid-search">Why Hybrid Search?</a></h2>
+<p>Vector search is great at finding “meaning” but sometimes misses specific keywords (like “fortnight” or “jacket” if they aren’t weighted heavily in the embedding). Full-text search excels at exact matches. By combining them, we get the best of both worlds.</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-
-                            <a rel="next prefetch" href="models.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                            <a rel="prev" href="rag_surrealdb_extends.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
+
 
                         <div style="clear: both"></div>
                     </nav>
@@ -222,10 +326,10 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-
-                    <a rel="next prefetch" href="models.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                    <a rel="prev" href="rag_surrealdb_extends.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
+
             </nav>
 
         </div>

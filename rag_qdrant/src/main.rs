@@ -106,7 +106,7 @@ async fn load_pdf(pdf_path: &str) -> Result<(), Box<dyn Error>> {
     }
 
     println!("Loaded all page chunks into Qdrant.");
-    println!("Ask questions with: cargo run -p rag_sample -- ask \"your question\"");
+    println!("Ask questions with: cargo run -p rag_qdrant -- ask \"your question\"");
     Ok(())
 }
 

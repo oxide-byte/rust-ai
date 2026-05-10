@@ -73,7 +73,9 @@ async fn load_pdf(pdf_path: &str) -> Result<(), Box<dyn Error>> {
 
         let embedding = get_embedding(&client, trimmed).await?;
 
+        let chunk_id = format!("chunk:{}", uuid::Uuid::new_v4().simple());
         let record = json!({
+            "id": chunk_id,
             "document": Value::String(doc_id.clone()),
             "source": pdf_name,
             "page": page_index + 1,
@@ -82,9 +84,8 @@ async fn load_pdf(pdf_path: &str) -> Result<(), Box<dyn Error>> {
         });
 
         let mut page_statements = vec![format!("USE NS {}; USE DB {};", NAMESPACE, DATABASE)];
-        page_statements.push(format!("CREATE chunk CONTENT {};", record));
-        page_statements.push(format!("RELATE {}->contains->chunk:{}", doc_id, uuid::Uuid::new_v4().simple())); // This is a bit hacky as we don't have the chunk id here easily without creating it first or using a specific ID.
-        // Actually, let's just use the RELATE after CREATE or use a specific ID for chunk.
+        page_statements.push(format!("CREATE {} CONTENT {};", chunk_id, record));
+        page_statements.push(format!("RELATE {}->contains->{};", doc_id, chunk_id));
         send_sql(&client, &page_statements).await?;
         println!("Loaded page {}...", page_index + 1);
     }
@@ -116,7 +117,9 @@ async fn init_sample_data() -> Result<(), Box<dyn Error>> {
     println!("Generating embedding for sample text...");
     let embedding = get_embedding(&client, sample_text).await?;
 
+    let chunk_id = format!("chunk:{}", uuid::Uuid::new_v4().simple());
     let record = json!({
+        "id": chunk_id,
         "document": Value::String(doc_id.to_string()),
         "source": "manual_entry",
         "page": 1,
@@ -125,8 +128,8 @@ async fn init_sample_data() -> Result<(), Box<dyn Error>> {
     });
 
     let mut page_statements = vec![format!("USE NS {}; USE DB {};", NAMESPACE, DATABASE)];
-    page_statements.push(format!("CREATE chunk CONTENT {};", record));
-    page_statements.push(format!("RELATE {}->contains->chunk:{}", doc_id, uuid::Uuid::new_v4().simple()));
+    page_statements.push(format!("CREATE {} CONTENT {};", chunk_id, record));
+    page_statements.push(format!("RELATE {}->contains->{};", doc_id, chunk_id));
     send_sql(&client, &page_statements).await?;
 
     println!("Loaded sample data for Peter the rabbit into SurrealDB.");

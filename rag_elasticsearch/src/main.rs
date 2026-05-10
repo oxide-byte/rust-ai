@@ -103,6 +103,7 @@ async fn load_pdf(pdf_path: &str) -> Result<(), Box<dyn Error>> {
     }
 
     println!("Loaded all page chunks into Elasticsearch.");
+    println!("Ask questions with: cargo run -p rag_elasticsearch -- ask \"your question\"");
     Ok(())
 }
 

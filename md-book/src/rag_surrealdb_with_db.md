@@ -19,31 +19,38 @@ Instead of just storing chunks as flat records, we now:
 ## How It Works
 
 ### 1. Relational Schema & Indexing
-We define a formal schema for documents and indexes to support relational data and hybrid search:
+We define a formal schema for documents and indexes to support relational data and hybrid search. We use a `SCHEMAFULL` approach for documents to ensure data integrity, while `chunk` remains flexible:
 
 ```sql
 -- Schema for documents
 DEFINE TABLE document SCHEMAFULL;
 DEFINE FIELD name ON document TYPE string;
+DEFINE FIELD created_at ON document TYPE datetime DEFAULT time::now();
+
+-- Schema for chunks (records will be related to documents)
+DEFINE TABLE chunk SCHEMALESS;
 
 -- Define an analyzer for Full-Text Search
 DEFINE ANALYZER ascii TOKENIZERS blank FILTERS ascii, lowercase;
 
--- Full-Text index
+-- Full-Text index on chunk text
 DEFINE INDEX chunk_text ON chunk FIELDS text FULLTEXT ANALYZER ascii BM25 HIGHLIGHTS;
 
--- Vector index
+-- Vector index on chunk embedding
 DEFINE INDEX chunk_embedding ON chunk FIELDS embedding HNSW DIMENSION 4096 DISTANCE COSINE;
+
+-- Define the relationship (graph)
+-- RELATE document:id->contains->chunk:id;
 ```
 
 ### 2. Hybrid Search Query
-The `ask` command now executes two different types of searches in a single request:
+The `ask` command executes two types of searches in a single request to leverage both semantic and keyword matching:
 
 ```sql
--- Full-Text Search
+-- Full-Text Search (Exact keyword matches)
 SELECT *, search::score(1) AS score FROM chunk WHERE text @1@ 'question' ORDER BY score DESC;
 
--- Vector Search
+-- Vector Search (Semantic similarity)
 SELECT *, vector::distance::knn() AS distance FROM chunk WHERE embedding <|3,40|> [vector] ORDER BY distance ASC;
 ```
 

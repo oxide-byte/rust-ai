@@ -39,7 +39,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let ollama_resp: OllamaResponse = response.json().await?;
         println!("\nGenerated Joke:\n{}", ollama_resp.response);
     } else {
-        println!("Error: Failed to get response from Ollama. Make sure Ollama is running and the model 'llama2' is available.");
+        println!("Error: Failed to get response from Ollama. Make sure Ollama is running and the model 'llama3.1' is available.");
     }
 
     Ok(())

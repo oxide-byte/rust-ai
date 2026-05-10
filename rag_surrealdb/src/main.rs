@@ -27,8 +27,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
 fn print_usage() {
     println!("Usage:");
-    println!("  cargo run -p rag_sample -- load <path-to-pdf>");
-    println!("  cargo run -p rag_sample -- ask \"<question>\"");
+    println!("  cargo run -p rag_surrealdb -- load <path-to-pdf>");
+    println!("  cargo run -p rag_surrealdb -- ask \"<question>\"");
 }
 
 async fn load_pdf(pdf_path: &str) -> Result<(), Box<dyn Error>> {
@@ -71,7 +71,7 @@ async fn load_pdf(pdf_path: &str) -> Result<(), Box<dyn Error>> {
     }
 
     println!("Loaded all page chunks into SurrealDB.");
-    println!("Ask questions with: cargo run -p rag_sample -- ask \"your question\"");
+    println!("Ask questions with: cargo run -p rag_surrealdb -- ask \"your question\"");
     Ok(())
 }
 
