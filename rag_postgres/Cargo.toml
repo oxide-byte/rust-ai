@@ -1,0 +1,14 @@
+[package]
+name = "rag_postgres"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+reqwest = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tokio = { workspace = true }
+pdf-extract = { workspace = true }
+uuid = { workspace = true, features = ["v4"] }
+tokio-postgres = { version = "0.7", features = ["with-uuid-1"] }
+pgvector = { version = "0.4", features = ["postgres"] }

@@ -4,6 +4,7 @@ members = [
     "rag_surrealdb",
     "rag_surrealdb_with_db",
     "rag_qdrant",
+    "rag_postgres",
     "rag_elasticsearch",
     "rag_surrealdb_extends"
 ]
@@ -15,4 +16,4 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 tokio = { version = "1.0", features = ["full"] }
 pdf-extract = "0.10"
-uuid = { version = "1.0", features = ["v4"] }
+uuid = { version = "1.0", features = ["v4", "serde"] }
